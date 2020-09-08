@@ -20,7 +20,7 @@ COPYING file for more details.
 (** * IEEE-754 encoding of binary floating-point data *)
 
 From Coq Require Import Lia.
-Require Import Core Digits Binary.
+Require Import Core Digits SpecFloatCompat BinarySingleNaN Binary.
 
 Section Binary_Bits.
 
@@ -128,10 +128,11 @@ Qed.
 Hypothesis Hmw : (0 < mw)%Z.
 Hypothesis Hew : (0 < ew)%Z.
 
-Let emax := Zpower 2 (ew - 1).
 Let prec := (mw + 1)%Z.
-Let emin := (3 - emax - prec)%Z.
-Let binary_float := binary_float prec emax.
+Let emax := Zpower 2 (ew - 1).
+Notation emin := (emin prec emax) (only parsing).
+Notation fexp := (fexp prec emax) (only parsing).
+Notation binary_float := (binary_float prec emax) (only parsing).
 
 Let Hprec : (0 < prec)%Z.
 Proof.
@@ -263,9 +264,8 @@ destruct (andb_prop _ _ Hx) as (Hx', _).
 unfold canonical_mantissa in Hx'.
 rewrite Zpos_digits2_pos in Hx'.
 generalize (Zeq_bool_eq _ _ Hx').
-unfold FLT_exp.
-unfold emin.
-clear ; zify ; lia.
+unfold fexp, FLT_exp, emin.
+clear ; lia.
 case Zle_bool_spec ; intros H ;
   [ apply -> Z.le_0_sub in H | apply -> Z.lt_sub_0 in H ] ;
   apply split_join_bits ; try now split.
@@ -319,7 +319,7 @@ intros [sx|sx|sx pl pl_range|sx mx ex H].
 - unfold bounded in H.
   apply Bool.andb_true_iff in H ; destruct H as [A B].
   apply Z.leb_le in B.
-  unfold canonical_mantissa, FLT_exp in A. apply Zeq_bool_eq in A.
+  unfold canonical_mantissa, fexp, FLT_exp in A. apply Zeq_bool_eq in A.
   case Zle_bool_spec ; intros H.
   + apply join_bits_range.
     * split.
@@ -331,9 +331,10 @@ intros [sx|sx|sx pl pl_range|sx mx ex H].
       change (2^1)%Z with 2%Z.
       clear ; lia.
       apply (Zpower_gt_Zdigits radix2 _ (Zpos mx)).
-      clear -A ; zify ; lia.
+      unfold emin in A.
+      clear -A ; lia.
     * split.
-      unfold emin ; clear -A ; zify ; lia.
+      unfold emin in A |- * ; clear -A ; lia.
       replace ew with ((ew - 1) + 1)%Z by ring.
       rewrite Zpower_plus by (clear - Hew ; lia).
       unfold emin, emax in *.
@@ -444,7 +445,7 @@ now apply Z.lt_gt.
 apply bounded_canonical_lt_emax ; try assumption.
 unfold canonical, cexp.
 rewrite mag_F2R_Zdigits. 2: discriminate.
-unfold Fexp, FLT_exp.
+unfold Fexp, fexp, FLT_exp.
 rewrite <- H.
 set (ex := ((x / 2^mw) mod 2^ew)%Z).
 replace (prec + (ex + emin - 1) - prec)%Z with (ex + emin - 1)%Z by ring.
@@ -536,7 +537,8 @@ rewrite Zpos_digits2_pos.
 unfold FLT_exp, emin.
 generalize (Zdigits radix2 (Zpos mx)).
 clear.
-intros ; zify ; lia.
+unfold fexp, emin.
+intros ; lia.
 (* . *)
 rewrite Zeq_bool_true. 2: apply refl_equal.
 simpl.
@@ -549,7 +551,8 @@ apply -> Z.lt_sub_0 in Hm.
 generalize (Zdigits_le_Zpower radix2 _ (Zpos mx) Hm).
 generalize (Zdigits radix2 (Zpos mx)).
 clear.
-intros ; zify ; lia.
+unfold fexp, emin.
+intros ; lia.
 Qed.
 
 Theorem bits_of_binary_float_of_bits :
@@ -658,8 +661,8 @@ Definition ternop_nan_pl32 (f1 f2 f3 : binary32) : { nan : binary32 | is_nan 24 
 Definition b32_erase : binary32 -> binary32 := erase 24 128.
 Definition b32_opp : binary32 -> binary32 := Bopp 24 128 unop_nan_pl32.
 Definition b32_abs : binary32 -> binary32 := Babs 24 128 unop_nan_pl32.
-Definition b32_pred : binary32 -> binary32 := Bpred _ _ Hprec Hprec_emax Hemax unop_nan_pl32.
-Definition b32_succ : binary32 -> binary32 := Bsucc _ _ Hprec Hprec_emax Hemax unop_nan_pl32.
+Definition b32_pred : binary32 -> binary32 := Bpred _ _ Hprec Hprec_emax.
+Definition b32_succ : binary32 -> binary32 := Bsucc _ _ Hprec Hprec_emax.
 Definition b32_sqrt : mode -> binary32 -> binary32 := Bsqrt  _ _ Hprec Hprec_emax unop_nan_pl32.
 
 Definition b32_plus :  mode -> binary32 -> binary32 -> binary32 := Bplus  _ _ Hprec Hprec_emax binop_nan_pl32.
@@ -725,8 +728,8 @@ Definition ternop_nan_pl64 (f1 f2 f3 : binary64) : { nan : binary64 | is_nan 53 
 Definition b64_erase : binary64 -> binary64 := erase 53 1024.
 Definition b64_opp : binary64 -> binary64 := Bopp 53 1024 unop_nan_pl64.
 Definition b64_abs : binary64 -> binary64 := Babs 53 1024 unop_nan_pl64.
-Definition b64_pred : binary64 -> binary64 := Bpred _ _ Hprec Hprec_emax Hemax unop_nan_pl64.
-Definition b64_succ : binary64 -> binary64 := Bsucc _ _ Hprec Hprec_emax Hemax unop_nan_pl64.
+Definition b64_pred : binary64 -> binary64 := Bpred _ _ Hprec Hprec_emax.
+Definition b64_succ : binary64 -> binary64 := Bsucc _ _ Hprec Hprec_emax.
 Definition b64_sqrt : mode -> binary64 -> binary64 := Bsqrt _ _ Hprec Hprec_emax unop_nan_pl64.
 
 Definition b64_plus  : mode -> binary64 -> binary64 -> binary64 := Bplus  _ _ Hprec Hprec_emax binop_nan_pl64.
