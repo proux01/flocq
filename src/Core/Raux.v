@@ -18,8 +18,9 @@ COPYING file for more details.
 *)
 
 (** * Missing definitions/lemmas *)
-Require Import Psatz.
-Require Export Reals ZArith.
+
+From Coq Require Import Psatz.
+From Coq Require Export Reals ZArith.
 Require Export Zaux.
 
 Section Rmissing.
@@ -1317,9 +1318,9 @@ rewrite Ropp_inv_permute with (1 := Zy').
 rewrite <- 2!opp_IZR.
 rewrite <- Zmod_opp_opp.
 apply H.
-clear -Hy. lia.
+clear -Hy ; lia.
 apply H.
-clear -Zy Hy. lia.
+clear -Zy Hy ; lia.
 (* *)
 split.
 pattern (IZR (x / y)) at 1 ; rewrite <- Rplus_0_r.
@@ -1912,7 +1913,7 @@ apply bpow_le.
 now apply Zlt_le_weak.
 apply IZR_le.
 clear -Zm.
-zify ; lia.
+lia.
 Qed.
 
 Lemma mag_mult :
@@ -2335,8 +2336,7 @@ refine (Rle_not_lt _ _ (lub (/ (INR (S N) + 1))%R _) _).
   intros Hy.
   refine (H _ _ Py).
   apply INR_lt in Hy.
-  clear -Hy HyN.
-  lia.
+  clear -Hy HyN ; lia.
   now apply Rlt_le, Rinv_0_lt_compat.
 rewrite S_INR, HN.
 ring_simplify (IZR (up (/ l)) - 1 + 1)%R.

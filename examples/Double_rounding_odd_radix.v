@@ -17,7 +17,7 @@ COPYING file for more details.
 
 (** * Conditions for innocuous double rounding. *)
 
-Require Import Psatz.
+From Coq Require Import Psatz.
 From Flocq Require Import Raux Defs Generic_fmt Operations Ulp.
 From Flocq Require Import FLX FLT FTZ Double_rounding.
 
@@ -973,11 +973,11 @@ apply neq_midpoint_beta_odd; try assumption.
     now apply Rplus_lt_0_compat.
   + replace (fexp1 ex) with (fexp1 ex - fexp1 ey + fexp1 ey)%Z by ring.
     rewrite bpow_plus, <- Rmult_assoc, <- Rmult_plus_distr_r.
-    rewrite <- IZR_Zpower; [|lia].
+    rewrite <- IZR_Zpower by lia.
     rewrite <- mult_IZR, <- plus_IZR.
     apply float_neq_midpoint_beta_odd.
     apply (Rmult_lt_reg_r (bpow (fexp1 ey))); [now apply bpow_gt_0|].
-    rewrite plus_IZR, mult_IZR, IZR_Zpower; [|lia].
+    rewrite plus_IZR, mult_IZR, IZR_Zpower by lia.
     rewrite Rmult_0_l, Rmult_plus_distr_r; bpow_simplify.
     rewrite <- Fx, <- Fy.
     now apply Rplus_lt_0_compat.
@@ -1063,11 +1063,11 @@ apply neq_midpoint_beta_odd; try assumption.
     now apply Rlt_Rminus.
   + replace (fexp1 ex) with (fexp1 ex - fexp1 ey + fexp1 ey)%Z by ring.
     rewrite bpow_plus, <- Rmult_assoc, <- Rmult_minus_distr_r.
-    rewrite <- IZR_Zpower; [|lia].
+    rewrite <- IZR_Zpower by lia.
     rewrite <- mult_IZR, <- minus_IZR.
     apply float_neq_midpoint_beta_odd.
     apply (Rmult_lt_reg_r (bpow (fexp1 ey))); [now apply bpow_gt_0|].
-    rewrite minus_IZR, mult_IZR, IZR_Zpower; [|lia].
+    rewrite minus_IZR, mult_IZR, IZR_Zpower by lia.
     rewrite Rmult_0_l, Rmult_minus_distr_r; bpow_simplify.
     rewrite <- Fx, <- Fy.
     now apply Rlt_Rminus.

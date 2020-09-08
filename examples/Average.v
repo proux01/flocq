@@ -322,8 +322,7 @@ unfold cexp.
 apply trans_eq with (FLT_exp emin prec (mag radix2 f -1)%Z).
 apply f_equal.
 unfold FLT_exp.
-rewrite Z.max_l.
-2: lia.
+rewrite Z.max_l by lia.
 apply mag_unique.
 rewrite Rabs_right.
 split.
@@ -350,13 +349,15 @@ ring_simplify.
 apply bpow_le.
 unfold Prec_gt_0 in prec_gt_0_; lia.
 unfold FLT_exp.
-rewrite Z.max_l;[ring|lia].
+rewrite Z.max_l by lia.
+ring.
 replace (/2) with (bpow (-1)) by reflexivity.
 rewrite ulp_neq_0; try now apply Rgt_not_eq.
 rewrite <- bpow_plus.
 apply f_equal.
 unfold cexp, FLT_exp.
-rewrite Z.max_l;[ring|lia].
+rewrite Z.max_l by lia.
+ring.
 (**)
 left.
 assert (bpow (mag radix2 f -1) < f).
@@ -375,8 +376,7 @@ apply generic_format_FLT_bpow...
 unfold Prec_gt_0 in prec_gt_0_;lia.
 rewrite ulp_bpow in H4.
 unfold FLT_exp in H4.
-rewrite Z.max_l in H4.
-2: lia.
+rewrite Z.max_l in H4 by lia.
 replace (mag radix2 f - 1 + 1 - prec)%Z with  (mag radix2 f - prec)%Z in H4 by ring.
 rewrite ulp_neq_0; try now apply Rgt_not_eq.
 rewrite ulp_neq_0 at 2; try now apply Rgt_not_eq.
@@ -552,8 +552,7 @@ rewrite T2 at 2.
 rewrite ulp_bpow.
 rewrite <- bpow_opp.
 unfold FLT_exp at 2.
-rewrite Z.max_l.
-2: lia.
+rewrite Z.max_l by lia.
 replace 2 with (bpow 1) by reflexivity.
 rewrite <- bpow_plus.
 rewrite H0.
@@ -1295,7 +1294,7 @@ unfold Zminus; rewrite bpow_plus, plus_IZR.
 change (bpow (-(1))) with (/2).
 field.
 assert (Z.abs (nu+nv) = 1)%Z.
-assert (0 < Z.abs (nu+nv) < 2)%Z;[idtac|lia].
+cut (0 < Z.abs (nu+nv) < 2)%Z. lia.
 split; apply lt_IZR; simpl; rewrite abs_IZR;
  apply Rmult_lt_reg_l with (bpow (emin-1)); try apply bpow_gt_0.
 rewrite Rmult_0_r.
@@ -1545,7 +1544,7 @@ apply Rmult_le_compat_r.
 apply bpow_ge_0.
 rewrite <- abs_IZR.
 apply IZR_le.
-assert (0 < Z.abs n)%Z;[idtac|lia].
+cut (0 < Z.abs n)%Z. lia.
 apply Z.abs_pos.
 intros M; apply K1.
 apply Rmult_eq_reg_l with 2.

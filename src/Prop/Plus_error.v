@@ -19,7 +19,7 @@ COPYING file for more details.
 
 (** * Error of the rounded-to-nearest addition is representable. *)
 
-Require Import Psatz.
+From Coq Require Import Psatz.
 Require Import Raux Defs Float_prop Generic_fmt.
 Require Import FIX FLX FLT Ulp Operations.
 Require Import Relative.
@@ -519,7 +519,7 @@ rewrite <- mag_minus1; try assumption.
 unfold FLT_exp; apply bpow_le.
 apply Z.le_trans with (2:=Z.le_max_l _ _).
 destruct (mag beta x) as (n,Hn); simpl.
-assert (e + prec < n)%Z; try lia.
+cut (e + prec < n)%Z. lia.
 apply lt_bpow with beta.
 apply Rle_lt_trans with (1:=He).
 now apply Hn.
@@ -567,7 +567,7 @@ unfold cexp.
 rewrite <- mag_minus1 by easy.
 unfold FLX_exp; apply bpow_le.
 destruct (mag beta x) as (n,Hn); simpl.
-assert (e + prec < n)%Z; try lia.
+cut (e + prec < n)%Z. lia.
 apply lt_bpow with beta.
 apply Rle_lt_trans with (1:=He).
 now apply Hn.

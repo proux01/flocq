@@ -18,8 +18,9 @@ COPYING file for more details.
 *)
 
 (** * Relative error of the roundings *)
+
+From Coq Require Import Psatz.
 Require Import Core.
-Require Import Psatz.  (* for lra *)
 
 Section Fprop_relative.
 

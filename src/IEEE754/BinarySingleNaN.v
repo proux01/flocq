@@ -685,7 +685,7 @@ rewrite H. 2: discriminate.
 revert H1. clear -H2.
 rewrite Zpos_digits2_pos.
 unfold fexp, FLT_exp.
-intros ; zify ; lia.
+intros ; lia.
 Qed.
 
 Theorem bounded_ge_emin :
@@ -712,7 +712,7 @@ generalize (Zdigits radix2 (Zpos mx)) (Zdigits_gt_0 radix2 (Zpos mx) H0).
 unfold fexp, FLT_exp.
 clear -prec_gt_0_.
 unfold Prec_gt_0 in prec_gt_0_.
-intros ; zify ; lia.
+intros ; lia.
 Qed.
 
 Theorem abs_B2R_le_emax_minus_prec :
@@ -895,7 +895,7 @@ now inversion H.
 (* *)
 intros p Hp.
 assert (He: (e <= fexp (Zdigits radix2 m + e))%Z).
-clear -Hp ; zify ; lia.
+clear -Hp ; lia.
 destruct (inbetween_float_ex radix2 m e l) as (x, Hx).
 generalize (inbetween_shr x m e l (fexp (Zdigits radix2 m + e) - e) Hm Hx).
 assert (Hx0 : (0 <= x)%R).
@@ -1453,7 +1453,7 @@ case_eq (ex' - ex)%Z ; simpl.
 intros H.
 now rewrite Zminus_eq with (1 := H).
 intros p.
-clear -He ; zify ; lia.
+clear -He ; lia.
 intros.
 apply refl_equal.
 Qed.
@@ -1572,7 +1572,7 @@ now rewrite is_finite_SF2B.
 rewrite Bsign_SF2B, Rz''.
 rewrite Rcompare_Gt...
 apply F2R_gt_0.
-simpl. zify; lia.
+simpl. lia.
 intros Hz' (Vz, Rz).
 rewrite B2SF_SF2B, Rz.
 apply f_equal.
@@ -1591,7 +1591,7 @@ now rewrite is_finite_SF2B.
 rewrite Bsign_SF2B, Rz''.
 rewrite Rcompare_Lt...
 apply F2R_lt_0.
-simpl. zify; lia.
+simpl. lia.
 intros Hz' (Vz, Rz).
 rewrite B2SF_SF2B, Rz.
 apply f_equal.

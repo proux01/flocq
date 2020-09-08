@@ -336,7 +336,7 @@ rewrite <- bpow_plus.
 right; apply f_equal.
 replace (e - 1 + (1 - prec))%Z with (e - prec)%Z by ring.
 apply Z.max_l; simpl.
-assert (emin+prec-1 < e)%Z; try lia.
+cut (emin+prec-1 < e)%Z. lia.
 apply lt_bpow with beta.
 apply Rle_lt_trans with (1:=Hx).
 now apply He.

@@ -1543,7 +1543,7 @@ apply generic_format_bpow.
 unfold FLT_exp.
 rewrite Z.max_l.
 lia.
-assert (emin + prec-1 <= Zceil (IZR (emin + prec - 1) / 2))%Z;[idtac|lia].
+cut (emin + prec-1 <= Zceil (IZR (emin + prec - 1) / 2))%Z. lia.
 rewrite <- (Zceil_IZR (emin+prec-1)) at 1.
 apply Zceil_le.
 apply Rmult_le_reg_l with 2%R.
@@ -2027,7 +2027,7 @@ apply generic_format_bpow.
 unfold FLT_exp.
 rewrite Z.max_l.
 lia.
-assert (emin+prec+1 <= Zceil (IZR (emin + prec - 1) / 2))%Z;[idtac|lia].
+cut (emin+prec+1 <= Zceil (IZR (emin + prec - 1) / 2))%Z. lia.
 apply le_IZR.
 apply Rle_trans with (2:=Zceil_ub _).
 apply Rmult_le_reg_r with 2%R.
@@ -2187,14 +2187,11 @@ Lemma fourth_format_gen_2: forall prec emin e:Z, (0 < prec)%Z -> (emin +2 <= e)%
   -> generic_format radix2 (FLT_exp emin prec) (/4*bpow radix2 e).
 Proof with auto with typeclass_instances.
 intros prec emin e Hprec H.
-replace (/4)%R with (bpow radix2 (-2)).
+change (/4)%R with (bpow radix2 (-2)).
 rewrite <- bpow_plus.
 apply generic_format_bpow...
 unfold FLT_exp.
-apply Z.max_case.
 lia.
-lia.
-reflexivity.
 Qed.
 
 Lemma fourth_format_gen_10: forall prec emin e:Z, (2 <= prec)%Z -> (emin +2 <= e)%Z

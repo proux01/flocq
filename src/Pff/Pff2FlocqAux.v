@@ -330,7 +330,7 @@ cut (Pff.Fexp f = e-p)%Z.
 intros V; rewrite V.
 apply sym_eq; apply Zmax_left.
 rewrite <- V; destruct H1; auto with zarith.
-assert (e = Pff.Fexp f + p)%Z;[idtac|lia].
+cut (e = Pff.Fexp f + p)%Z. lia.
 apply trans_eq with (mag beta (FtoR beta f)).
 apply sym_eq; apply mag_unique.
 apply He; assumption.
@@ -365,7 +365,7 @@ lia.
 rewrite Zplus_comm, bpow_plus.
 apply Rmult_lt_compat_r.
 apply bpow_gt_0.
-rewrite <- (inj_abs p);[idtac|lia].
+rewrite <- (inj_abs p) by lia.
 rewrite <- IZR_Zpower_nat.
 simpl; rewrite <- pGivesBound.
 rewrite Rabs_Zabs.
@@ -375,7 +375,7 @@ destruct H1; assumption.
 destruct H as (H1,(H2,H3)).
 rewrite H2.
 apply sym_eq; apply Zmax_right.
-assert ((e-1) < p-dExp b)%Z;[idtac|lia].
+cut ((e-1) < p-dExp b)%Z. lia.
 apply lt_bpow with beta.
 apply Rle_lt_trans with (Rabs (FtoR beta f)).
 apply He; auto.
@@ -587,7 +587,7 @@ apply Rlt_le_trans with (1:=H2).
 right; ring.
 (* *)
 rewrite round_N_middle.
-rewrite inj_abs;[idtac|lia].
+rewrite inj_abs by lia.
 case (choice _).
 apply sym_eq, pff_round_UP_is_round.
 apply sym_eq, pff_round_DN_is_round.

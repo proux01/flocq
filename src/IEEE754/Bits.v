@@ -248,7 +248,7 @@ Theorem split_bits_of_binary_float_correct :
 Proof.
 intros [sx|sx|sx plx Hplx|sx mx ex Hx] ;
   try ( simpl ; apply split_join_bits ; split ; try apply Z.le_refl ; try apply Zlt_pred ; trivial ; lia ).
-simpl. apply split_join_bits; split; try (zify; lia).
+simpl. apply split_join_bits; split; try lia.
 destruct (digits2_Pnat_correct plx).
 unfold nan_pl in Hplx.
 rewrite Zpos_digits2_pos, <- Z_of_nat_S_digits2_Pnat in Hplx.
@@ -256,7 +256,7 @@ rewrite Zpower_nat_Z in H0.
 eapply Z.lt_le_trans. apply H0.
 change 2%Z with (radix_val radix2). apply Zpower_le.
 rewrite Z.ltb_lt in Hplx.
-unfold prec in *. zify; lia.
+unfold prec in *. lia.
 (* *)
 unfold bits_of_binary_float, split_bits_of_binary_float.
 assert (Hf: (emin <= ex /\ Zdigits radix2 (Zpos mx) <= prec)%Z).
@@ -593,7 +593,7 @@ case Zeq_bool_spec ; intros He2.
 case_eq mx; intros Hm.
 now rewrite He2.
 now rewrite He2.
-intros. zify; lia.
+intros ; lia.
 (* normal *)
 case_eq (mx + 2 ^ mw)%Z.
 intros Hm.
@@ -606,7 +606,7 @@ now ring_simplify (mx + 2^mw - 2^mw)%Z (ex + emin - 1 - emin + 1)%Z.
 now ring_simplify.
 intros p Hm.
 apply False_ind.
-clear -Bm Hm ; zify ; lia.
+clear -Bm Hm ; lia.
 Qed.
 
 End Binary_Bits.
