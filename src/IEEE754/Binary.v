@@ -105,6 +105,63 @@ Proof.
 now intros beta [s|s| |s m e].
 Qed.
 
+Definition is_nan_FF f :=
+  match f with
+  | F754_nan _ _ => true
+  | _ => false
+  end.
+
+Lemma is_nan_SF2FF :
+  forall x,
+  is_nan_FF (SF2FF x) = is_nan_SF x.
+Proof.
+now intros [s|s| |s m e].
+Qed.
+
+Lemma is_nan_FF2SF :
+  forall x,
+  is_nan_SF (FF2SF x) = is_nan_FF x.
+Proof.
+now intros [s|s|s m|s m e].
+Qed.
+
+Lemma SF2FF_FF2SF :
+  forall x,
+  is_nan_FF x = false ->
+  SF2FF (FF2SF x) = x.
+Proof.
+now intros [s|s|s m|s m e] H.
+Qed.
+
+Definition sign_FF x :=
+  match x with
+  | F754_nan s _ => s
+  | F754_zero s => s
+  | F754_infinity s => s
+  | F754_finite s _ _ => s
+  end.
+
+Definition is_finite_FF f :=
+  match f with
+  | F754_finite _ _ _ => true
+  | F754_zero _ => true
+  | _ => false
+  end.
+
+Lemma is_finite_SF2FF :
+  forall x,
+  is_finite_FF (SF2FF x) = is_finite_SF x.
+Proof.
+now intros [| | |].
+Qed.
+
+Lemma sign_SF2FF :
+  forall x,
+  sign_FF (SF2FF x) = sign_SF x.
+Proof.
+now intros [| | |].
+Qed.
+
 End AnyRadix.
 
 Section Binary.
@@ -130,12 +187,22 @@ Notation bounded := (bounded prec emax).
 Definition nan_pl pl :=
   Zlt_bool (Zpos (digits2_pos pl)) prec.
 
+Notation valid_binary_SF := (valid_binary prec emax).
+
 Definition valid_binary x :=
   match x with
   | F754_finite _ m e => bounded m e
   | F754_nan _ pl => nan_pl pl
   | _ => true
   end.
+
+Lemma valid_binary_SF2FF :
+  forall x,
+  is_nan_SF x = false ->
+  valid_binary (SF2FF x) = valid_binary_SF x.
+Proof.
+now intros [sx|sx| |sx mx ex] H.
+Qed.
 
 (** Basic type used for representing binary FP numbers.
     Note that there is exactly one such object per FP datum. *)
@@ -406,26 +473,11 @@ Definition Bsign x :=
   | B754_finite s _ _ _ => s
   end.
 
-Definition sign_FF x :=
-  match x with
-  | F754_nan s _ => s
-  | F754_zero s => s
-  | F754_infinity s => s
-  | F754_finite s _ _ => s
-  end.
-
 Theorem Bsign_FF2B :
   forall x H,
   Bsign (FF2B x H) = sign_FF x.
 Proof.
 now intros [sx|sx|sx plx|sx mx ex] H.
-Qed.
-
-Lemma sign_SF2FF :
-  forall x,
-  sign_FF (SF2FF x) = sign_SF x.
-Proof.
-now intros [| | |].
 Qed.
 
 Definition is_finite f :=
@@ -442,13 +494,6 @@ intros x.
 now destruct x.
 Qed.
 
-Definition is_finite_FF f :=
-  match f with
-  | F754_finite _ _ _ => true
-  | F754_zero _ => true
-  | _ => false
-  end.
-
 Theorem is_finite_FF2B :
   forall x Hx,
   is_finite (FF2B x Hx) = is_finite_FF x.
@@ -459,13 +504,6 @@ Qed.
 Theorem is_finite_B2FF :
   forall x,
   is_finite_FF (B2FF x) = is_finite x.
-Proof.
-now intros [| | |].
-Qed.
-
-Lemma is_finite_SF2FF :
-  forall x,
-  is_finite_FF (SF2FF x) = is_finite_SF x.
 Proof.
 now intros [| | |].
 Qed.
@@ -502,12 +540,6 @@ Lemma is_nan_B2BSN :
 Proof.
 now intros [s|s|s p H|s m e H].
 Qed.
-
-Definition is_nan_FF f :=
-  match f with
-  | F754_nan _ _ => true
-  | _ => false
-  end.
 
 Theorem is_nan_FF2B :
   forall x Hx,
