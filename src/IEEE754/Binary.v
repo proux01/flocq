@@ -22,6 +22,31 @@ COPYING file for more details.
 From Coq Require Import Psatz.
 Require Import Core Digits Round Bracket Operations Div Sqrt Relative SpecFloatCompat BinarySingleNaN.
 
+Notation shr_record := shr_record (only parsing).
+Notation shr_1 := shr_1 (only parsing).
+Notation loc_of_shr_record := loc_of_shr_record (only parsing).
+Notation shr_record_of_loc := shr_record_of_loc (only parsing).
+Notation shr_m_shr_record_of_loc := shr_m_shr_record_of_loc (only parsing).
+Notation loc_of_shr_record_of_loc := loc_of_shr_record_of_loc (only parsing).
+Notation shr := shr (only parsing).
+Notation inbetween_shr_1 := inbetween_shr_1 (only parsing).
+Notation inbetween_shr := inbetween_shr (only parsing).
+
+Notation mode := mode (only parsing).
+Notation mode_NE := mode_NE (only parsing).
+Notation mode_ZR := mode_ZR (only parsing).
+Notation mode_DN := mode_DN (only parsing).
+Notation mode_UP := mode_UP (only parsing).
+Notation mode_NA := mode_NA (only parsing).
+Notation round_mode := round_mode (only parsing).
+Notation valid_rnd_round_mode := valid_rnd_round_mode (only parsing).
+Notation choice_mode := choice_mode (only parsing).
+Notation overflow_to_inf := overflow_to_inf (only parsing).
+
+Notation shl_align := shl_align (only parsing).
+Notation shl_align_correct := shl_align_correct (only parsing).
+Notation snd_shl_align := snd_shl_align (only parsing).
+
 Module BSN := BinarySingleNaN.
 
 Arguments BSN.B754_zero {prec emax}.
@@ -841,15 +866,6 @@ Qed.
 
 (** Truncation *)
 
-Notation shr_record := shr_record (only parsing).
-Notation shr_1 := shr_1 (only parsing).
-Notation loc_of_shr_record := loc_of_shr_record (only parsing).
-Notation shr_record_of_loc := shr_record_of_loc (only parsing).
-Notation shr_m_shr_record_of_loc := shr_m_shr_record_of_loc (only parsing).
-Notation loc_of_shr_record_of_loc := loc_of_shr_record_of_loc (only parsing).
-Notation shr := shr (only parsing).
-Notation inbetween_shr_1 := inbetween_shr_1 (only parsing).
-Notation inbetween_shr := inbetween_shr (only parsing).
 Notation shr_fexp := (shr_fexp prec emax) (only parsing).
 
 Theorem shr_truncate :
@@ -863,11 +879,6 @@ now apply shr_truncate.
 Qed.
 
 (** Rounding modes *)
-
-Notation mode := BSN.mode (only parsing).
-Notation round_mode := round_mode (only parsing).
-Notation choice_mode := choice_mode (only parsing).
-Notation overflow_to_inf := overflow_to_inf (only parsing).
 
 Definition binary_overflow m s :=
   SF2FF (binary_overflow prec emax m s).
@@ -976,10 +987,6 @@ destruct Rlt_bool.
 Qed.
 
 (** Normalization and rounding *)
-
-Notation shl_align := shl_align (only parsing).
-Notation shl_align_correct := shl_align_correct (only parsing).
-Notation snd_shl_align := snd_shl_align (only parsing).
 
 Definition shl_align_fexp mx ex :=
   shl_align mx ex (fexp (Zpos (digits2_pos mx) + ex)).
