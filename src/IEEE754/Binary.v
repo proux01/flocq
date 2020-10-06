@@ -920,13 +920,12 @@ Lemma eq_binary_overflow_FF2SF :
   FF2SF x = BSN.binary_overflow prec emax m s ->
   x = binary_overflow m s.
 Proof.
-intros x m s.
-unfold binary_overflow, BSN.binary_overflow.
-destruct overflow_to_inf.
-destruct x as [|sx| |] ; try easy.
-now intros [= <-].
-destruct x as [| | |sx mx ex] ; try easy.
-now intros [= <- -> <-].
+intros x m s H.
+unfold binary_overflow.
+rewrite <- H.
+apply eq_sym, SF2FF_FF2SF.
+rewrite <- is_nan_FF2SF, H.
+apply is_nan_binary_overflow.
 Qed.
 
 Definition binary_round_aux mode sx mx ex lx :=
@@ -950,14 +949,11 @@ generalize (binary_round_aux_correct' prec emax _ _ mode x mx ex lx Px Bx Ex).
 unfold binary_round_aux.
 destruct (Rlt_bool (Rabs _) _).
 - now destruct BSN.binary_round_aux as [sz|sz| |sz mz ez].
-- intros [H1 H2].
+- intros [_ ->].
   split.
-  revert H1.
-  rewrite H2.
-  unfold BSN.binary_overflow.
-  now destruct overflow_to_inf.
-  apply eq_binary_overflow_FF2SF.
-  now rewrite FF2SF_SF2FF.
+  rewrite valid_binary_SF2FF by apply is_nan_binary_overflow.
+  now apply binary_overflow_correct.
+  easy.
 Qed.
 
 Theorem binary_round_aux_correct :
@@ -977,14 +973,11 @@ generalize (binary_round_aux_correct prec emax _ _ mode x mx ex lx Bx Ex).
 unfold binary_round_aux.
 destruct (Rlt_bool (Rabs _) _).
 - now destruct BSN.binary_round_aux as [sz|sz| |sz mz ez].
-- intros [H1 H2].
+- intros [_ ->].
   split.
-  revert H1.
-  rewrite H2.
-  unfold BSN.binary_overflow.
-  now destruct overflow_to_inf.
-  apply eq_binary_overflow_FF2SF.
-  now rewrite FF2SF_SF2FF.
+  rewrite valid_binary_SF2FF by apply is_nan_binary_overflow.
+  now apply binary_overflow_correct.
+  easy.
 Qed.
 
 (** Multiplication *)
@@ -1054,14 +1047,11 @@ simpl.
 unfold binary_round.
 destruct Rlt_bool.
 - now destruct BSN.binary_round.
-- intros [H1 H2].
+- intros [H1 ->].
   split.
-  revert H1.
-  rewrite H2.
-  unfold BSN.binary_overflow.
-  now destruct overflow_to_inf.
-  apply eq_binary_overflow_FF2SF.
-  now rewrite FF2SF_SF2FF.
+  rewrite valid_binary_SF2FF by apply is_nan_binary_overflow.
+  now apply binary_overflow_correct.
+  easy.
 Qed.
 
 Definition binary_normalize mode m e szero :=
