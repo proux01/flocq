@@ -17,6 +17,7 @@ FILES = \
 	Calc/Bracket.v \
 	Calc/Div.v \
 	Calc/Operations.v \
+	Calc/Plus.v \
 	Calc/Round.v \
 	Calc/Sqrt.v \
 	Prop/Div_sqrt_error.v \
