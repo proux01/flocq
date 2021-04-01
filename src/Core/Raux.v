@@ -2041,6 +2041,33 @@ replace (ex - 1 - 1)%Z with (ex - 2)%Z by ring.
 now apply Rabs_ge; right.
 Qed.
 
+Theorem mag_plus_ge :
+  forall x y,
+  (x <> 0)%R ->
+  (mag y <= mag x - 2)%Z ->
+  (mag x - 1 <= mag (x + y))%Z.
+Proof.
+intros x y Zx.
+destruct (Req_dec y 0) as [Zy|Zy].
+{ intros _.
+  rewrite Zy, Rplus_0_r.
+  lia. }
+rewrite <- (mag_abs x), <- (mag_abs y).
+intros Hm.
+assert (H: Rabs x <> Rabs y).
+{ intros H.
+  apply Zlt_not_le with (2 := Hm).
+  rewrite H.
+  lia. }
+apply mag_minus_lb in Hm ; try now apply Rabs_pos_lt.
+apply Z.le_trans with (1 := Hm).
+apply mag_le_abs.
+now apply Rminus_eq_contra.
+rewrite <- (Ropp_involutive y).
+rewrite Rabs_Ropp.
+apply Rabs_triang_inv2.
+Qed.
+
 Lemma mag_div :
   forall x y : R,
   x <> 0%R -> y <> 0%R ->
