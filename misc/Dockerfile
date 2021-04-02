@@ -8,7 +8,7 @@ USER root
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -yq && \
     apt-get upgrade -yq --with-new-pkgs --auto-remove && \
-    apt-get install -yq --no-install-recommends autoconf build-essential ca-certificates git graphviz g++ ocaml-nox unzip wget && \
+    apt-get install -yq --no-install-recommends autoconf build-essential ca-certificates git graphviz g++ libgmp-dev ocaml-nox unzip wget && \
     apt-get clean
 
 RUN wget --quiet https://github.com/ocaml/opam/releases/download/2.0.6/opam-2.0.6-x86_64-linux -O /usr/local/bin/opam && \
@@ -25,6 +25,6 @@ ENV OPAM_PACKAGES="conf-autoconf conf-g++"
 RUN opam init -y --no-setup -j1 --bare --disable-sandboxing && \
     opam switch create minimal ocaml-system && opam install -y $OPAM_PACKAGES && \
     opam switch create latest  ocaml-system && opam install -y $OPAM_PACKAGES && \
-    opam install -y --switch=minimal coq.8.7.2 && \
-    opam install -y --switch=latest  coq.8.12.0 && \
+    opam install -y --switch=minimal coq.8.12.2 && \
+    opam install -y --switch=latest  coq.8.13.2 && \
     opam clean -a -c -r -s --logs
