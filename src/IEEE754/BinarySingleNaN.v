@@ -19,9 +19,9 @@ COPYING file for more details.
 
 (** * IEEE-754 arithmetic *)
 
-From Coq Require Import Psatz SpecFloat.
+From Coq Require Import ZArith Reals Psatz SpecFloat.
 
-Require Import Core Digits Round Bracket Operations Div Sqrt Relative.
+Require Import Core Round Bracket Operations Div Sqrt Relative.
 
 Definition SF2R beta x :=
   match x with

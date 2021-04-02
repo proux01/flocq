@@ -19,8 +19,9 @@ COPYING file for more details.
 
 (** * What is a real number belonging to a format, and many properties. *)
 
-From Coq Require Import Lia.
-Require Import Raux Defs Round_pred Float_prop.
+From Coq Require Import ZArith Reals Lia.
+
+Require Import Zaux Raux Defs Round_pred Float_prop.
 
 Section Generic.
 

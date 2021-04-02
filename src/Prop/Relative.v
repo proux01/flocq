@@ -19,7 +19,8 @@ COPYING file for more details.
 
 (** * Relative error of the roundings *)
 
-From Coq Require Import Psatz.
+From Coq Require Import ZArith Reals Psatz.
+
 Require Import Core.
 
 Section Fprop_relative.

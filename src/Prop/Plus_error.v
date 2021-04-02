@@ -19,11 +19,9 @@ COPYING file for more details.
 
 (** * Error of the rounded-to-nearest addition is representable. *)
 
-From Coq Require Import Psatz.
-Require Import Raux Defs Float_prop Generic_fmt.
-Require Import FIX FLX FLT Ulp Operations.
-Require Import Relative.
+From Coq Require Import ZArith Reals Psatz.
 
+Require Import Core Operations Relative.
 
 Section Fprop_plus_error.
 

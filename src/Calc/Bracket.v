@@ -19,9 +19,9 @@ COPYING file for more details.
 
 (** * Locations: where a real number is positioned with respect to its rounded-down value in an arbitrary format. *)
 
-From Coq Require Import Lia SpecFloat.
+From Coq Require Import ZArith Reals Lia SpecFloat.
 
-Require Import Raux Defs Float_prop.
+Require Import Zaux Raux Defs Float_prop.
 
 Notation location := location (only parsing).
 Notation loc_Exact := loc_Exact (only parsing).

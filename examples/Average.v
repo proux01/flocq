@@ -15,7 +15,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 COPYING file for more details.
 *)
 
-Require Import Reals Psatz.
+From Coq Require Import ZArith Reals Psatz.
 From Flocq Require Import Core Plus_error.
 
 Open Scope R_scope.

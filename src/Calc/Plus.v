@@ -19,8 +19,9 @@ COPYING file for more details.
 
 (** * Helper function and theorem for computing the rounded sum of two floating-point numbers. *)
 
-From Coq Require Import Lia.
-Require Import Raux Defs Generic_fmt Float_prop Digits Bracket Operations Round.
+From Coq Require Import ZArith Reals Lia.
+
+Require Import Core Bracket Operations Round.
 
 Section Plus.
 

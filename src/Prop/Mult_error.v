@@ -19,7 +19,8 @@ COPYING file for more details.
 
 (** * Error of the multiplication is in the FLX/FLT format *)
 
-From Coq Require Import Lia.
+From Coq Require Import ZArith Reals Lia.
+
 Require Import Core Operations Plus_error.
 
 Section Fprop_mult_error.

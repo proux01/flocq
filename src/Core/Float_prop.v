@@ -19,8 +19,9 @@ COPYING file for more details.
 
 (** * Basic properties of floating-point formats: lemmas about mantissa, exponent... *)
 
-From Coq Require Import Lia.
-Require Import Raux Defs Digits.
+From Coq Require Import ZArith Reals Lia.
+
+Require Import Zaux Raux Defs Digits.
 
 Section Float_prop.
 

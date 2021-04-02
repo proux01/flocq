@@ -21,8 +21,9 @@ COPYING file for more details.
 
 (** * Conditions for innocuous double rounding. *)
 
-From Coq Require Import Psatz.
-Require Import Raux Defs Generic_fmt Operations Ulp FLX FLT FTZ.
+From Coq Require Import ZArith Reals Psatz.
+
+Require Import Core FTZ.
 
 Open Scope R_scope.
 

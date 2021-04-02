@@ -19,9 +19,9 @@ COPYING file for more details.
 
 (** * Missing definitions/lemmas *)
 
-From Coq Require Import Psatz.
-From Coq Require Export Reals ZArith.
-Require Export Zaux.
+From Coq Require Import Psatz Reals ZArith.
+
+Require Import Zaux.
 
 Section Rmissing.
 

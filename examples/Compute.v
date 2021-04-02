@@ -17,6 +17,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 COPYING file for more details.
 *)
 
+From Coq Require Import ZArith Reals.
 From Flocq Require Import Core Bracket Round Operations Div Sqrt.
 
 Section Compute.
