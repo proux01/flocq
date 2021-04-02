@@ -17,9 +17,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 COPYING file for more details.
 *)
 
-From Coq Require Import ZArith Lia Zquot.
-
-Require Import SpecFloatCompat.
+From Coq Require Import ZArith Lia Zquot SpecFloat.
 
 Notation cond_Zopp := cond_Zopp (only parsing).
 Notation iter_pos := iter_pos (only parsing).

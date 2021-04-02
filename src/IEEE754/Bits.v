@@ -19,8 +19,9 @@ COPYING file for more details.
 
 (** * IEEE-754 encoding of binary floating-point data *)
 
-From Coq Require Import Lia.
-Require Import Core Digits SpecFloatCompat BinarySingleNaN Binary.
+From Coq Require Import Lia SpecFloat.
+
+Require Import Core Digits BinarySingleNaN Binary.
 
 Section Binary_Bits.
 

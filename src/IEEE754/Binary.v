@@ -19,8 +19,9 @@ COPYING file for more details.
 
 (** * IEEE-754 arithmetic *)
 
-From Coq Require Import Psatz.
-Require Import Core Digits Round Bracket Operations Div Sqrt Relative SpecFloatCompat BinarySingleNaN.
+From Coq Require Import Psatz SpecFloat.
+
+Require Import Core Digits Round Bracket Operations Div Sqrt Relative BinarySingleNaN.
 
 Notation shr_record := shr_record (only parsing).
 Notation shr_1 := shr_1 (only parsing).
@@ -182,7 +183,7 @@ Instance fexp_monotone : Monotone_exp fexp := FLT_exp_monotone emin prec.
 
 Notation canonical_mantissa := (canonical_mantissa prec emax).
 
-Notation bounded := (bounded prec emax).
+Notation bounded := (SpecFloat.bounded prec emax).
 
 Definition nan_pl pl :=
   Zlt_bool (Zpos (digits2_pos pl)) prec.

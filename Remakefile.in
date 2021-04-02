@@ -27,11 +27,10 @@ FILES = \
 	Prop/Sterbenz.v \
 	Prop/Round_odd.v \
 	Prop/Double_rounding.v \
-	@PRIM_FLOAT@ \
-	IEEE754/SpecFloatCompat.v \
 	IEEE754/BinarySingleNaN.v \
 	IEEE754/Binary.v \
 	IEEE754/Bits.v \
+	IEEE754/PrimFloat.v \
 	Pff/Pff.v \
 	Pff/Pff2FlocqAux.v \
 	Pff/Pff2Flocq.v
@@ -61,7 +60,7 @@ check: $(EOBJS)
 
 check-more: $(MOBJS)
 
-CONFIGURED_FILES = Remakefile src/Version.v src/IEEE754/SpecFloatCompat.v
+CONFIGURED_FILES = Remakefile src/Version.v
 
 $(CONFIGURED_FILES): %: %.in config.status
 	./config.status $@
@@ -70,7 +69,7 @@ configure config.status: configure.in
 	autoconf
 	./config.status --recheck
 
-%.vo: %.v | src/IEEE754/SpecFloatCompat.v
+%.vo: %.v
 	@COQDEP@ -R src Flocq $< | @REMAKE@ -r $@
 	@COQC@ @COQEXTRAFLAGS@ -R src Flocq $<
 
@@ -98,7 +97,7 @@ html/index.html: $(OBJS)
 deps.dot: $(addprefix src/,$(FILES)) Remakefile.in
 	(echo "digraph flocq_deps { pack=true; rank=max;"
 	echo "node [shape=ellipse, style=filled, URL=\"html/Flocq.\N.html\", color=black];"
-	echo '{ rank=same; "Core.Zaux"; "Core.Raux"; "IEEE754.SpecFloatCompat"; }'
+	echo '{ rank=same; "Core.Zaux"; "Core.Raux"; }'
 	echo '{ rank=same; "Core.Generic_fmt"; "Core.Ulp"; }'
 	echo '{ rank=same; "Core.FLX"; "Core.FIX"; "Core.Round_NE"; }'
 	echo '{ rank=same; "Core.FLT"; "Core.FTZ"; "Calc.Operations"; }'

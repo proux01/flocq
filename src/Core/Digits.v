@@ -17,10 +17,9 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 COPYING file for more details.
 *)
 
-From Coq Require Import Lia ZArith Zquot.
+From Coq Require Import Lia ZArith Zquot SpecFloat.
 
 Require Import Zaux.
-Require Import SpecFloatCompat.
 
 Notation digits2_pos := digits2_pos (only parsing).
 Notation Zdigits2 := Zdigits2 (only parsing).

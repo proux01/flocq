@@ -15,7 +15,6 @@ remake.exe
 /html/
 /public/
 src/Version.v
-src/IEEE754/SpecFloatCompat.v
 *.vo
 *.vos
 *.vok

@@ -19,8 +19,9 @@ COPYING file for more details.
 
 (** * IEEE-754 arithmetic *)
 
-From Coq Require Import Psatz.
-Require Import Core Digits Round Bracket Operations Div Sqrt Relative SpecFloatCompat.
+From Coq Require Import Psatz SpecFloat.
+
+Require Import Core Digits Round Bracket Operations Div Sqrt Relative.
 
 Definition SF2R beta x :=
   match x with
@@ -47,7 +48,7 @@ Instance fexp_monotone : Monotone_exp fexp := FLT_exp_monotone emin prec.
 
 Notation canonical_mantissa := (canonical_mantissa prec emax).
 
-Notation bounded := (bounded prec emax).
+Notation bounded := (SpecFloat.bounded prec emax).
 
 Notation valid_binary := (valid_binary prec emax).
 
@@ -599,8 +600,6 @@ Qed.
 
 Definition Bleb (f1 f2 : binary_float) : bool := SFleb (B2SF f1) (B2SF f2).
 
-(* FIXME: Commented out due to an error in Coq 8.11
-   c.f. https://github.com/coq/coq/issues/12483
 Theorem Bleb_correct :
   forall f1 f2,
   is_finite f1 = true -> is_finite f2 = true ->
@@ -612,7 +611,6 @@ unfold Bleb, SFleb, Bcompare.
 intros ->.
 case Rcompare_spec; intro H; case Rle_bool_spec; intro H'; try reflexivity; lra.
 Qed.
-*)
 
 Theorem bounded_le_emax_minus_prec :
   forall mx ex,
@@ -2050,11 +2048,11 @@ apply binary_round_aux_correct'.
   now apply F2R_neq_0 ; case sy.
 - rewrite Rabs_mult, Rabs_Rinv.
   + rewrite <- 2!F2R_Zabs, 2!abs_cond_Zopp; simpl.
-    replace (new_location _ _) with (Bracket.new_location (Z.pos my) r loc_Exact);
+    replace (SpecFloat.new_location _ _) with (Bracket.new_location (Z.pos my) r loc_Exact);
       [exact Bz|].
     case my as [p|p|]; [reflexivity| |reflexivity].
-    unfold Bracket.new_location, new_location; simpl.
-    unfold Bracket.new_location_even, new_location_even; simpl.
+    unfold Bracket.new_location, SpecFloat.new_location; simpl.
+    unfold Bracket.new_location_even, SpecFloat.new_location_even; simpl.
     now case Zeq_bool; [|case r as [|rp|rp]; case Z.compare].
   + now apply F2R_neq_0 ; case sy.
 - rewrite <- cexp_abs, Rabs_mult, Rabs_Rinv.
