@@ -1406,6 +1406,26 @@ Qed.
 
 (** Normalization and rounding *)
 
+Theorem shl_align_correct':
+  forall mx ex e,
+  (e <= ex)%Z ->
+  let (mx', ex') := shl_align mx ex e in
+  F2R (Float radix2 (Zpos mx') e) = F2R (Float radix2 (Zpos mx) ex) /\
+  ex' = e.
+Proof.
+intros mx ex ex' He.
+unfold shl_align.
+destruct (ex' - ex)%Z as [|d|d] eqn:Hd ; simpl.
+- now replace ex with ex' by lia.
+- exfalso ; lia.
+- refine (conj _ eq_refl).
+  rewrite shift_pos_correct, Zmult_comm.
+  change (Zpower_pos 2 d) with (Zpower radix2 (Z.opp (Z.neg d))).
+  rewrite <- Hd.
+  replace (- (ex' - ex))%Z with (ex - ex')%Z by ring.
+  now apply eq_sym, F2R_change_exp.
+Qed.
+
 Theorem shl_align_correct :
   forall mx ex ex',
   let (mx', ex'') := shl_align mx ex ex' in
@@ -1413,33 +1433,21 @@ Theorem shl_align_correct :
   (ex'' <= ex')%Z.
 Proof.
 intros mx ex ex'.
+generalize (shl_align_correct' mx ex ex').
 unfold shl_align.
-case_eq (ex' - ex)%Z.
-(* d = 0 *)
-intros H.
-repeat split.
-rewrite Zminus_eq with (1 := H).
-apply Z.le_refl.
-(* d > 0 *)
-intros d Hd.
-repeat split.
-replace ex' with (ex' - ex + ex)%Z by ring.
-rewrite Hd.
-pattern ex at 1 ; rewrite <- Zplus_0_l.
-now apply Zplus_le_compat_r.
-(* d < 0 *)
-intros d Hd.
-rewrite shift_pos_correct, Zmult_comm.
-change (Zpower_pos 2 d) with (Zpower radix2 (Zpos d)).
-change (Zpos d) with (Z.opp (Zneg d)).
-rewrite <- Hd.
-split.
-replace (- (ex' - ex))%Z with (ex - ex')%Z by ring.
-apply F2R_change_exp.
-apply Zle_0_minus_le.
-replace (ex - ex')%Z with (- (ex' - ex))%Z by ring.
-now rewrite Hd.
-apply Z.le_refl.
+destruct (ex' - ex)%Z as [|d|d] eqn:Hd ; simpl.
+- refine (fun H => _ (H _)).
+  2: clear -Hd; lia.
+  clear.
+  intros [H1 ->].
+  now split.
+- intros _.
+  refine (conj eq_refl _).
+  lia.
+- refine (fun H => _ (H _)).
+  2: clear -Hd; lia.
+  clear.
+  now split.
 Qed.
 
 Theorem snd_shl_align :
@@ -1448,14 +1456,8 @@ Theorem snd_shl_align :
   snd (shl_align mx ex ex') = ex'.
 Proof.
 intros mx ex ex' He.
-unfold shl_align.
-case_eq (ex' - ex)%Z ; simpl.
-intros H.
-now rewrite Zminus_eq with (1 := H).
-intros p.
-clear -He ; lia.
-intros.
-apply refl_equal.
+generalize (shl_align_correct' mx ex ex' He).
+now destruct shl_align as [m e].
 Qed.
 
 Definition shl_align_fexp mx ex :=
@@ -1689,19 +1691,11 @@ set (mz := (cond_Zopp sx (Zpos (fst (shl_align mx ex ez))) + cond_Zopp sy (Zpos 
 assert (Hp: (F2R (Float radix2 (cond_Zopp sx (Zpos mx)) ex) +
   F2R (Float radix2 (cond_Zopp sy (Zpos my)) ey))%R = F2R (Float radix2 mz ez)).
 rewrite 2!F2R_cond_Zopp.
-generalize (shl_align_correct mx ex ez).
-generalize (shl_align_correct my ey ez).
-generalize (snd_shl_align mx ex ez (Z.le_min_l ex ey)).
-generalize (snd_shl_align my ey ez (Z.le_min_r ex ey)).
+generalize (shl_align_correct' mx ex ez (Z.le_min_l _ _)).
+generalize (shl_align_correct' my ey ez (Z.le_min_r _ _)).
 destruct (shl_align mx ex ez) as (mx', ex').
 destruct (shl_align my ey ez) as (my', ey').
-simpl.
-intros H1 H2.
-rewrite H1, H2.
-clear H1 H2.
-intros (H1, _) (H2, _).
-rewrite H1, H2.
-clear H1 H2.
+intros [<- _] [<- _].
 rewrite <- 2!F2R_cond_Zopp.
 unfold F2R. simpl.
 now rewrite <- Rmult_plus_distr_r, <- plus_IZR.
