@@ -209,6 +209,9 @@ rewrite <-!B2SF_Prim2B.
 case (Prim2B x) as [sx|sx| |sx mx ex Bx];
   case (Prim2B y) as [sy|sy| |sy my ey By];
   [now (trivial || simpl; case Bool.eqb)..|].
+simpl.
+unfold Zminus.
+rewrite <- cond_Zopp_negb.
 apply binary_normalize_equiv.
 Qed.
 

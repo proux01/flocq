@@ -1619,6 +1619,33 @@ Qed.
 
 (** Addition *)
 
+Definition Fplus_naive sx mx ex sy my ey ez :=
+  (Zplus (cond_Zopp sx (Zpos (fst (shl_align mx ex ez)))) (cond_Zopp sy (Zpos (fst (shl_align my ey ez))))).
+
+Lemma Fplus_naive_correct :
+  forall sx mx ex sy my ey ez,
+  (ez <= ex)%Z -> (ez <= ey)%Z ->
+  let x := F2R (Float radix2 (cond_Zopp sx (Zpos mx)) ex) in
+  let y := F2R (Float radix2 (cond_Zopp sy (Zpos my)) ey) in
+  F2R (Float radix2 (Fplus_naive sx mx ex sy my ey ez) ez) = (x + y)%R.
+Proof.
+intros sx mx ex sy my ey ez Ex Ey.
+unfold Fplus_naive, F2R. simpl.
+generalize (shl_align_correct' mx ex ez Ex).
+generalize (shl_align_correct' my ey ez Ey).
+destruct shl_align as [my' ey'].
+destruct shl_align as [mx' ex'].
+intros [Hy _].
+intros [Hx _].
+simpl.
+rewrite plus_IZR, Rmult_plus_distr_r.
+generalize (f_equal (cond_Ropp sx) Hx).
+generalize (f_equal (cond_Ropp sy) Hy).
+rewrite <- 4!F2R_cond_Zopp.
+unfold F2R. simpl.
+now intros -> ->.
+Qed.
+
 Definition Bplus m x y :=
   match x, y with
   | B754_nan, _ | _, B754_nan => B754_nan
@@ -1632,7 +1659,7 @@ Definition Bplus m x y :=
   | _, B754_zero _ => x
   | B754_finite sx mx ex Hx, B754_finite sy my ey Hy =>
     let ez := Z.min ex ey in
-    binary_normalize m (Zplus (cond_Zopp sx (Zpos (fst (shl_align mx ex ez)))) (cond_Zopp sy (Zpos (fst (shl_align my ey ez)))))
+    binary_normalize m (Fplus_naive sx mx ex sy my ey ez)
       ez (match m with mode_DN => true | _ => false end)
   end.
 
@@ -1685,22 +1712,14 @@ clear Fx Fy.
 simpl.
 set (szero := match m with mode_DN => true | _ => false end).
 set (ez := Z.min ex ey).
-set (mz := (cond_Zopp sx (Zpos (fst (shl_align mx ex ez))) + cond_Zopp sy (Zpos (fst (shl_align my ey ez))))%Z).
-assert (Hp: (F2R (Float radix2 (cond_Zopp sx (Zpos mx)) ex) +
-  F2R (Float radix2 (cond_Zopp sy (Zpos my)) ey))%R = F2R (Float radix2 mz ez)).
-rewrite 2!F2R_cond_Zopp.
-generalize (shl_align_correct' mx ex ez (Z.le_min_l _ _)).
-generalize (shl_align_correct' my ey ez (Z.le_min_r _ _)).
-destruct (shl_align mx ex ez) as (mx', ex').
-destruct (shl_align my ey ez) as (my', ey').
-intros [<- _] [<- _].
-rewrite <- 2!F2R_cond_Zopp.
-unfold F2R. simpl.
-now rewrite <- Rmult_plus_distr_r, <- plus_IZR.
-rewrite Hp.
+assert (Hp := Fplus_naive_correct sx mx ex sy my ey ez (Z.le_min_l _ _) (Z.le_min_r _ _)).
+set (mz := Fplus_naive sx mx ex sy my ey ez).
+simpl in Hp.
+fold mz in Hp.
+rewrite <- Hp.
 assert (Sz: (bpow radix2 emax <= Rabs (round radix2 fexp (round_mode m) (F2R (Float radix2 mz ez))))%R -> sx = Rlt_bool (F2R (Float radix2 mz ez)) 0 /\ sx = sy).
 (* . *)
-rewrite <- Hp.
+rewrite Hp.
 intros Bz.
 destruct (Bool.bool_dec sx sy) as [Hs|Hs].
 (* .. *)
@@ -1777,7 +1796,7 @@ rewrite H3.
 case Rcompare_spec ; try easy.
 intros Hz'.
 rewrite Hz' in Hp.
-apply Rplus_opp_r_uniq in Hp.
+apply eq_sym, Rplus_opp_r_uniq in Hp.
 rewrite <- F2R_Zopp in Hp.
 eapply canonical_unique in Hp.
 inversion Hp.
@@ -1812,7 +1831,7 @@ Definition Bminus m x y :=
   | _, B754_zero _ => x
   | B754_finite sx mx ex Hx, B754_finite sy my ey Hy =>
     let ez := Z.min ex ey in
-    binary_normalize m (Zminus (cond_Zopp sx (Zpos (fst (shl_align mx ex ez)))) (cond_Zopp sy (Zpos (fst (shl_align my ey ez)))))
+    binary_normalize m (Fplus_naive sx mx ex (negb sy) my ey ez)
       ez (match m with mode_DN => true | _ => false end)
   end.
 
@@ -1838,11 +1857,9 @@ generalize (Bplus_correct m x (Bopp y) Fx).
 rewrite is_finite_Bopp, B2R_Bopp.
 intros H.
 specialize (H Fy).
-replace (negb (Bsign y)) with (Bsign (Bopp y)).
+rewrite <- Bsign_Bopp.
 destruct x as [| | |sx mx ex Hx], y as [| | |sy my ey Hy] ; try easy.
-unfold Bminus, Zminus.
-now rewrite <- cond_Zopp_negb.
-now destruct y as [ | | | ].
+now clear -Fy; destruct y as [ | | | ].
 Qed.
 
 (** Fused Multiply-Add *)
