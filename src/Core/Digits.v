@@ -17,12 +17,13 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 COPYING file for more details.
 *)
 
-From Coq Require Import Lia ZArith Zquot SpecFloat.
+From Coq Require Import Lia ZArith Zquot.
+From Coq Require SpecFloat.
 
 Require Import Zaux.
 
-Notation digits2_pos := digits2_pos (only parsing).
-Notation Zdigits2 := Zdigits2 (only parsing).
+Notation digits2_pos := SpecFloat.digits2_pos (only parsing).
+Notation Zdigits2 := SpecFloat.Zdigits2 (only parsing).
 
 (** Number of bits (radix 2) of a positive integer.
 

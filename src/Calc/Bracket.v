@@ -19,13 +19,14 @@ COPYING file for more details.
 
 (** * Locations: where a real number is positioned with respect to its rounded-down value in an arbitrary format. *)
 
-From Coq Require Import ZArith Reals Lia SpecFloat.
+From Coq Require Import ZArith Reals Lia.
+From Coq Require SpecFloat.
 
 Require Import Zaux Raux Defs Float_prop.
 
-Notation location := location (only parsing).
-Notation loc_Exact := loc_Exact (only parsing).
-Notation loc_Inexact := loc_Inexact (only parsing).
+Notation location := SpecFloat.location (only parsing).
+Notation loc_Exact := SpecFloat.loc_Exact (only parsing).
+Notation loc_Inexact := SpecFloat.loc_Inexact (only parsing).
 
 Section Fcalc_bracket.
 

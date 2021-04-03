@@ -17,10 +17,11 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 COPYING file for more details.
 *)
 
-From Coq Require Import ZArith Lia Zquot SpecFloat.
+From Coq Require Import ZArith Lia Zquot.
+From Coq Require SpecFloat.
 
-Notation cond_Zopp := cond_Zopp (only parsing).
-Notation iter_pos := iter_pos (only parsing).
+Notation cond_Zopp := SpecFloat.cond_Zopp (only parsing).
+Notation iter_pos := SpecFloat.iter_pos (only parsing).
 
 Section Zmissing.
 
