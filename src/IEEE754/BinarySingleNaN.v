@@ -1646,6 +1646,82 @@ unfold F2R. simpl.
 now intros -> ->.
 Qed.
 
+Lemma sign_plus_overflow :
+  forall m sx mx ex sy my ey,
+  bounded mx ex = true ->
+  bounded my ey = true ->
+  let z := (F2R (Float radix2 (cond_Zopp sx (Zpos mx)) ex) + F2R (Float radix2 (cond_Zopp sy (Zpos my)) ey))%R in
+  (bpow radix2 emax <= Rabs (round radix2 fexp (round_mode m) z))%R ->
+  sx = Rlt_bool z 0 /\ sx = sy.
+Proof with auto with typeclass_instances.
+intros m sx mx ex sy my ey Hx Hy z Bz.
+destruct (Bool.bool_dec sx sy) as [Hs|Hs].
+(* .. *)
+refine (conj _ Hs).
+unfold z.
+rewrite Hs.
+apply sym_eq.
+case sy.
+apply Rlt_bool_true.
+rewrite <- (Rplus_0_r 0).
+apply Rplus_lt_compat.
+now apply F2R_lt_0.
+now apply F2R_lt_0.
+apply Rlt_bool_false.
+rewrite <- (Rplus_0_r 0).
+apply Rplus_le_compat.
+now apply F2R_ge_0.
+now apply F2R_ge_0.
+(* .. *)
+elim Rle_not_lt with (1 := Bz).
+generalize (bounded_lt_emax _ _ Hx) (bounded_lt_emax _ _ Hy) (andb_prop _ _ Hx) (andb_prop _ _ Hy).
+intros Bx By (Hx',_) (Hy',_).
+generalize (canonical_canonical_mantissa sx _ _ Hx') (canonical_canonical_mantissa sy _ _ Hy').
+clear -Bx By Hs prec_gt_0_.
+intros Cx Cy.
+destruct sx.
+(* ... *)
+destruct sy.
+now elim Hs.
+clear Hs.
+apply Rabs_lt.
+split.
+apply Rlt_le_trans with (F2R (Float radix2 (cond_Zopp true (Zpos mx)) ex)).
+rewrite F2R_Zopp.
+now apply Ropp_lt_contravar.
+apply round_ge_generic...
+now apply generic_format_canonical.
+pattern (F2R (Float radix2 (cond_Zopp true (Zpos mx)) ex)) at 1 ; rewrite <- Rplus_0_r.
+apply Rplus_le_compat_l.
+now apply F2R_ge_0.
+apply Rle_lt_trans with (2 := By).
+apply round_le_generic...
+now apply generic_format_canonical.
+rewrite <- (Rplus_0_l (F2R (Float radix2 (Zpos my) ey))).
+apply Rplus_le_compat_r.
+now apply F2R_le_0.
+(* ... *)
+destruct sy.
+2: now elim Hs.
+clear Hs.
+apply Rabs_lt.
+split.
+apply Rlt_le_trans with (F2R (Float radix2 (cond_Zopp true (Zpos my)) ey)).
+rewrite F2R_Zopp.
+now apply Ropp_lt_contravar.
+apply round_ge_generic...
+now apply generic_format_canonical.
+pattern (F2R (Float radix2 (cond_Zopp true (Zpos my)) ey)) at 1 ; rewrite <- Rplus_0_l.
+apply Rplus_le_compat_r.
+now apply F2R_ge_0.
+apply Rle_lt_trans with (2 := Bx).
+apply round_le_generic...
+now apply generic_format_canonical.
+rewrite <- (Rplus_0_r (F2R (Float radix2 (Zpos mx) ex))).
+apply Rplus_le_compat_l.
+now apply F2R_le_0.
+Qed.
+
 Definition Bplus m x y :=
   match x, y with
   | B754_nan, _ | _, B754_nan => B754_nan
@@ -1717,75 +1793,6 @@ set (mz := Fplus_naive sx mx ex sy my ey ez).
 simpl in Hp.
 fold mz in Hp.
 rewrite <- Hp.
-assert (Sz: (bpow radix2 emax <= Rabs (round radix2 fexp (round_mode m) (F2R (Float radix2 mz ez))))%R -> sx = Rlt_bool (F2R (Float radix2 mz ez)) 0 /\ sx = sy).
-(* . *)
-rewrite Hp.
-intros Bz.
-destruct (Bool.bool_dec sx sy) as [Hs|Hs].
-(* .. *)
-refine (conj _ Hs).
-rewrite Hs.
-apply sym_eq.
-case sy.
-apply Rlt_bool_true.
-rewrite <- (Rplus_0_r 0).
-apply Rplus_lt_compat.
-now apply F2R_lt_0.
-now apply F2R_lt_0.
-apply Rlt_bool_false.
-rewrite <- (Rplus_0_r 0).
-apply Rplus_le_compat.
-now apply F2R_ge_0.
-now apply F2R_ge_0.
-(* .. *)
-elim Rle_not_lt with (1 := Bz).
-generalize (bounded_lt_emax _ _ Hx) (bounded_lt_emax _ _ Hy) (andb_prop _ _ Hx) (andb_prop _ _ Hy).
-intros Bx By (Hx',_) (Hy',_).
-generalize (canonical_canonical_mantissa sx _ _ Hx') (canonical_canonical_mantissa sy _ _ Hy').
-clear -Bx By Hs prec_gt_0_.
-intros Cx Cy.
-destruct sx.
-(* ... *)
-destruct sy.
-now elim Hs.
-clear Hs.
-apply Rabs_lt.
-split.
-apply Rlt_le_trans with (F2R (Float radix2 (cond_Zopp true (Zpos mx)) ex)).
-rewrite F2R_Zopp.
-now apply Ropp_lt_contravar.
-apply round_ge_generic...
-now apply generic_format_canonical.
-pattern (F2R (Float radix2 (cond_Zopp true (Zpos mx)) ex)) at 1 ; rewrite <- Rplus_0_r.
-apply Rplus_le_compat_l.
-now apply F2R_ge_0.
-apply Rle_lt_trans with (2 := By).
-apply round_le_generic...
-now apply generic_format_canonical.
-rewrite <- (Rplus_0_l (F2R (Float radix2 (Zpos my) ey))).
-apply Rplus_le_compat_r.
-now apply F2R_le_0.
-(* ... *)
-destruct sy.
-2: now elim Hs.
-clear Hs.
-apply Rabs_lt.
-split.
-apply Rlt_le_trans with (F2R (Float radix2 (cond_Zopp true (Zpos my)) ey)).
-rewrite F2R_Zopp.
-now apply Ropp_lt_contravar.
-apply round_ge_generic...
-now apply generic_format_canonical.
-pattern (F2R (Float radix2 (cond_Zopp true (Zpos my)) ey)) at 1 ; rewrite <- Rplus_0_l.
-apply Rplus_le_compat_r.
-now apply F2R_ge_0.
-apply Rle_lt_trans with (2 := Bx).
-apply round_le_generic...
-now apply generic_format_canonical.
-rewrite <- (Rplus_0_r (F2R (Float radix2 (Zpos mx) ex))).
-apply Rplus_le_compat_l.
-now apply F2R_le_0.
-(* . *)
 generalize (binary_normalize_correct m mz ez szero).
 simpl.
 case Rlt_bool_spec ; intros Hz.
@@ -1808,10 +1815,12 @@ rewrite <- cond_Zopp_negb.
 apply canonical_canonical_mantissa.
 apply Bool.andb_true_iff in Hx. easy.
 intros Vz.
-specialize (Sz Hz).
+rewrite Hp in Hz.
+assert (Sz := sign_plus_overflow m sx mx ex sy my ey Hx Hy Hz).
 split.
 rewrite Vz.
-now apply f_equal.
+apply f_equal.
+now rewrite Hp.
 apply Sz.
 Qed.
 
