@@ -821,6 +821,18 @@ Proof.
 now intros [|n|n].
 Qed.
 
+Theorem Zdigits_opp :
+  forall n, Zdigits (Z.opp n) = Zdigits n.
+Proof.
+now intros [|n|n].
+Qed.
+
+Theorem Zdigits_cond_Zopp :
+  forall s n, Zdigits (cond_Zopp s n) = Zdigits n.
+Proof.
+now intros [|] [|n|n].
+Qed.
+
 Theorem Zdigits_gt_0 :
   forall n, n <> Z0 -> (0 < Zdigits n)%Z.
 Proof.
