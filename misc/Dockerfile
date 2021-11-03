@@ -1,6 +1,6 @@
 # If you modify this file, make sure to update the BUILD_IMAGE variable in .gitlab-ci.yml.
 
-FROM debian:buster
+FROM debian:buster-slim
 
 USER root
 
@@ -26,5 +26,5 @@ RUN opam init -y --no-setup -j1 --bare --disable-sandboxing && \
     opam switch create minimal ocaml-system && opam install -y $OPAM_PACKAGES && \
     opam switch create latest  ocaml-system && opam install -y $OPAM_PACKAGES && \
     opam install -y --switch=minimal coq.8.12.2 && \
-    opam install -y --switch=latest  coq.8.13.2 && \
+    opam install -y --switch=latest  coq.8.14.0 && \
     opam clean -a -c -r -s --logs
