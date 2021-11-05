@@ -1,3 +1,11 @@
+Version 4.0.0
+-------------
+
+* made Coq 8.12 the minimal version and removed the `IEEE754.SpecFloatCompat` layer
+* removed automatic export of `ZArith` and `Reals` from `Core.Raux` and `Core.Core`
+* proved a close/far-path adder in `Calc.Plus`
+* made `IEEE754.Binary` a wrapper around `IEEE754.BinarySingleNaN`
+
 Version 3.4.2
 -------------
 
