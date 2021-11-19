@@ -41,7 +41,8 @@ EXAMPLES = \
 	Average.v \
 	Compute.v \
 	Double_rounding_odd_radix.v \
-	Homogen.v
+	Homogen.v \
+	Print17.v
 
 MORE_EXAMPLES = \
 	Cody_Waite.v \
