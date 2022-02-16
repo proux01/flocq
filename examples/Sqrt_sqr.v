@@ -1626,9 +1626,9 @@ repeat apply f_equal; apply f_equal2; apply f_equal; ring.
 Qed.
 
 End Sec5.
-Require Import Compute.
-From Flocq Require Import Bracket Round Operations Div.
 
+Require Import ComputeMore. (* see Compute.v *)
+From Flocq Require Import Bracket Round Operations Div.
 
 Section Sec6.
 

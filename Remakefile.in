@@ -75,11 +75,18 @@ configure config.status: configure.in
 	@COQC@ @COQEXTRAFLAGS@ -R src Flocq $<
 
 examples/%.vo: examples/%.v
-	@COQDEP@ -R src Flocq -R examples FlocqEx $< | @REMAKE@ -r $@
-	@COQC@ -R src Flocq -R examples FlocqEx $<
+	@COQDEP@ $(LOCAL) -R examples FlocqEx $< | @REMAKE@ -r $@
+	@COQC@ $(LOCAL) -R examples FlocqEx $<
+
+$(EOBJS): LOCAL = -R src Flocq
+
+examples/Sqrt_sqr.vo: | examples/ComputeMore.v
+
+examples/ComputeMore.v: examples/Compute.v
+	cp examples/Compute.v examples/ComputeMore.v
 
 clean:
-	rm -f $(OBJS) $(EOBJS) $(MOBJS) src/*.glob examples/*.glob
+	rm -f $(OBJS) $(EOBJS) $(MOBJS) src/*.glob examples/*.glob examples/ComputeMore.v
 	for d in src src/Core src/Calc src/Prop src/Pff src/IEEE754 examples; do \
 	  rm -f $d/.coq-native/*.o $d/.coq-native/*.cm*; done
 	find . -type d -name ".coq-native" -empty -prune -exec rmdir "{}" \;
