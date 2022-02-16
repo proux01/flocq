@@ -326,16 +326,7 @@ Theorem canonical_canonical_mantissa :
   canonical radix2 fexp (Float radix2 (cond_Zopp sx (Zpos mx)) ex).
 Proof.
 intros sx mx ex H.
-assert (Hx := Zeq_bool_eq _ _ H). clear H.
-apply sym_eq.
-simpl.
-pattern ex at 2 ; rewrite <- Hx.
-apply (f_equal fexp).
-rewrite mag_F2R_Zdigits.
-rewrite <- Zdigits_abs.
-rewrite Zpos_digits2_pos.
-now case sx.
-now case sx.
+now apply canonical_canonical_mantissa.
 Qed.
 
 Theorem generic_format_B2R :
@@ -345,8 +336,7 @@ Proof.
 intros [sx|sx|sx plx Hx |sx mx ex Hx] ; try apply generic_format_0.
 simpl.
 apply generic_format_canonical.
-apply canonical_canonical_mantissa.
-now destruct (andb_prop _ _ Hx) as (H, _).
+now apply canonical_bounded.
 Qed.
 
 Theorem FLT_format_B2R :
@@ -429,10 +419,8 @@ assert (mx = my /\ ex = ey).
 refine (_ (canonical_unique _ fexp _ _ _ _ Heq)).
 rewrite Hs.
 now case sy ; intro H ; injection H ; split.
-apply canonical_canonical_mantissa.
-exact (proj1 (andb_prop _ _ Hx)).
-apply canonical_canonical_mantissa.
-exact (proj1 (andb_prop _ _ Hy)).
+now apply canonical_bounded.
+now apply canonical_bounded.
 (* *)
 revert Hx.
 rewrite Hs, (proj1 H), (proj2 H).

@@ -164,6 +164,16 @@ now case sx.
 now case sx.
 Qed.
 
+Theorem canonical_bounded :
+  forall sx mx ex,
+  bounded mx ex = true ->
+  canonical radix2 fexp (Float radix2 (cond_Zopp sx (Zpos mx)) ex).
+Proof.
+intros sx mx ex H.
+apply canonical_canonical_mantissa.
+now apply andb_prop in H.
+Qed.
+
 Theorem generic_format_B2R :
   forall x,
   generic_format radix2 fexp (B2R x).
@@ -171,8 +181,7 @@ Proof.
 intros [sx|sx| |sx mx ex Hx] ; try apply generic_format_0.
 simpl.
 apply generic_format_canonical.
-apply canonical_canonical_mantissa.
-now destruct (andb_prop _ _ Hx) as (H, _).
+now apply canonical_bounded.
 Qed.
 
 Theorem FLT_format_B2R :
@@ -261,10 +270,8 @@ assert (mx = my /\ ex = ey).
 refine (_ (canonical_unique _ fexp _ _ _ _ Heq)).
 rewrite Hs.
 now case sy ; intro H ; injection H ; split.
-apply canonical_canonical_mantissa.
-exact (proj1 (andb_prop _ _ Hx)).
-apply canonical_canonical_mantissa.
-exact (proj1 (andb_prop _ _ Hy)).
+now apply canonical_bounded.
+now apply canonical_bounded.
 (* *)
 revert Hx.
 rewrite Hs, (proj1 H), (proj2 H).
@@ -1674,9 +1681,9 @@ now apply F2R_ge_0.
 now apply F2R_ge_0.
 (* .. *)
 elim Rle_not_lt with (1 := Bz).
-generalize (bounded_lt_emax _ _ Hx) (bounded_lt_emax _ _ Hy) (andb_prop _ _ Hx) (andb_prop _ _ Hy).
-intros Bx By (Hx',_) (Hy',_).
-generalize (canonical_canonical_mantissa sx _ _ Hx') (canonical_canonical_mantissa sy _ _ Hy').
+generalize (bounded_lt_emax _ _ Hx) (bounded_lt_emax _ _ Hy).
+intros Bx By.
+generalize (canonical_bounded sx _ _ Hx) (canonical_bounded sy _ _ Hy).
 clear -Bx By Hs prec_gt_0_.
 intros Cx Cy.
 destruct sx.
@@ -1809,11 +1816,9 @@ eapply canonical_unique in Hp.
 inversion Hp.
 clear -H0.
 destruct sy, sx, m ; easy.
-apply canonical_canonical_mantissa.
-apply Bool.andb_true_iff in Hy. easy.
+now apply canonical_bounded.
 rewrite <- cond_Zopp_negb.
-apply canonical_canonical_mantissa.
-apply Bool.andb_true_iff in Hx. easy.
+now apply canonical_bounded.
 intros Vz.
 rewrite Hp in Hz.
 assert (Sz := sign_plus_overflow m sx mx ex sy my ey Hx Hy Hz).
@@ -2244,8 +2249,7 @@ intros.
 apply Z.le_max_r.
 now apply F2R_gt_0.
 apply generic_format_canonical.
-apply (canonical_canonical_mantissa false).
-apply (andb_prop _ _ Hx).
+now apply (canonical_bounded false).
 apply round_ge_generic...
 apply generic_format_0.
 apply sqrt_ge_0.
@@ -2866,8 +2870,7 @@ intros [sx|sx| | [|] mx ex Bx] Hx ; try easy ; clear Hx.
   unfold emin.
   generalize (prec_gt_0 prec) (prec_lt_emax prec emax).
   lia.
-- assert (Cx := proj1 (andb_prop _ _ Bx)).
-  change (B2R (B754_finite _ _ _ _)) with (F2R (Fopp (Float radix2 (Zpos mx) ex))).
+- change (B2R (B754_finite _ _ _ _)) with (F2R (Fopp (Float radix2 (Zpos mx) ex))).
   rewrite F2R_opp, succ_opp.
   rewrite Rlt_bool_true ; cycle 1.
   { apply Rle_lt_trans with 0%R.
@@ -2878,7 +2881,7 @@ intros [sx|sx| | [|] mx ex Bx] Hx ; try easy ; clear Hx.
     now apply FLT_exp_valid.
     now apply F2R_gt_0.
     apply generic_format_canonical.
-    now apply (canonical_canonical_mantissa false). }
+    now apply (canonical_bounded false). }
   simpl.
   rewrite B2R_SF2B, is_finite_SF2B, Bsign_SF2B.
   generalize (binary_round_correct mode_ZR true (xO mx - 1) (ex - 1)).
@@ -2915,7 +2918,7 @@ intros [sx|sx| | [|] mx ex Bx] Hx ; try easy ; clear Hx.
       apply bpow_le.
       apply Z.le_pred_l.
       easy.
-      now apply (canonical_canonical_mantissa false).
+      now apply (canonical_bounded false).
     * rewrite Hu2.
       rewrite ulp_canonical.
       rewrite <- (Zmult_1_r radix2).
@@ -2923,7 +2926,7 @@ intros [sx|sx| | [|] mx ex Bx] Hx ; try easy ; clear Hx.
       rewrite <- bpow_plus.
       apply Rle_refl.
       easy.
-      now apply (canonical_canonical_mantissa false).
+      now apply (canonical_bounded false).
   + rewrite Rabs_Ropp, Rabs_pos_eq.
     eapply Rle_lt_trans.
     2: apply bounded_lt_emax with (1 := Bx).
