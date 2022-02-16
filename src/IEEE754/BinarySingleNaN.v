@@ -520,47 +520,51 @@ Theorem Bcompare_correct :
   is_finite f1 = true -> is_finite f2 = true ->
   Bcompare f1 f2 = Some (Rcompare (B2R f1) (B2R f2)).
 Proof.
-  Ltac apply_Rcompare :=
-    match goal with
-      | [ |- Lt = Rcompare _ _ ] => symmetry; apply Rcompare_Lt
-      | [ |- Eq = Rcompare _ _ ] => symmetry; apply Rcompare_Eq
-      | [ |- Gt = Rcompare _ _ ] => symmetry; apply Rcompare_Gt
-    end.
-  unfold Bcompare, SFcompare; intros f1 f2 H1 H2.
-  destruct f1, f2; try easy; apply f_equal; clear H1 H2.
-  now rewrite Rcompare_Eq.
-  destruct s0 ; apply_Rcompare.
+assert (Hb: forall m1 e1 m2 e2, bounded m1 e1 = true -> bounded m2 e2 = true -> (e1 < e2)%Z ->
+  (F2R (Float radix2 (Zpos m1) e1) < F2R (Float radix2 (Zpos m2) e2))%R).
+{ intros m1 e1 m2 e2 B1 B2 He.
+  apply (lt_cexp_pos radix2 fexp).
+  now apply F2R_gt_0.
+  rewrite <- (canonical_bounded false _ _ B1).
+  rewrite <- (canonical_bounded false _ _ B2).
+  easy. }
+assert (Hc: forall m1 e1 m2 e2, bounded m1 e1 = true -> bounded m2 e2 = true ->
+  Rcompare (F2R (Float radix2 (Zpos m1) e1)) (F2R (Float radix2 (Zpos m2) e2)) =
+  match Z.compare e1 e2 with Eq => Z.compare (Zpos m1) (Zpos m2) | Lt => Lt | Gt => Gt end).
+{ intros m1 e1 m2 e2 B1 B2.
+  case Zcompare_spec ; intros He.
+  + apply Rcompare_Lt.
+    now apply Hb.
+  + now rewrite He, Rcompare_F2R.
+  + apply Rcompare_Gt.
+    now apply Hb. }
+intros [s1|[|]| |[|] m1 e1 B1] ; try easy ;
+  intros [s2|[|]| |[|] m2 e2 B2] ; try easy ;
+  intros _ _ ; apply (f_equal Some), eq_sym.
+- now apply Rcompare_Eq.
+- apply Rcompare_Gt.
+  now apply F2R_lt_0.
+- apply Rcompare_Lt.
+  now apply F2R_gt_0.
+- apply Rcompare_Lt.
+  now apply F2R_lt_0.
+- unfold B2R.
+  rewrite 2!F2R_cond_Zopp.
+  rewrite Rcompare_opp.
+  rewrite Hc by easy.
+  rewrite (Z.compare_antisym e1), (Z.compare_antisym (Zpos m1)).
+  now case Z.compare.
+- apply Rcompare_Lt.
+  apply Rlt_trans with 0%R.
   now apply F2R_lt_0.
   now apply F2R_gt_0.
-  destruct s ; apply_Rcompare.
+- apply Rcompare_Gt.
+  now apply F2R_gt_0.
+- apply Rcompare_Gt.
+  apply Rlt_trans with 0%R.
   now apply F2R_lt_0.
   now apply F2R_gt_0.
-  simpl.
-  apply andb_prop in e0; destruct e0; apply (canonical_canonical_mantissa false) in H.
-  apply andb_prop in e2; destruct e2; apply (canonical_canonical_mantissa false) in H1.
-  pose proof (Zcompare_spec e e1); unfold canonical, Fexp in H1, H.
-  assert (forall m1 m2 e1 e2,
-    let x := (IZR (Zpos m1) * bpow radix2 e1)%R in
-    let y := (IZR (Zpos m2) * bpow radix2 e2)%R in
-    (cexp radix2 fexp x < cexp radix2 fexp y)%Z -> (x < y)%R).
-  {
-  intros; apply Rnot_le_lt; intro; apply (mag_le radix2) in H5.
-  apply Zlt_not_le with (1 := H4).
-  now apply fexp_monotone.
-  now apply (F2R_gt_0 _ (Float radix2 (Zpos m2) e2)).
-  }
-  assert (forall m1 m2 e1 e2, (IZR (- Zpos m1) * bpow radix2 e1 < IZR (Zpos m2) * bpow radix2 e2)%R).
-  {
-  intros; apply (Rlt_trans _ 0%R).
-  now apply (F2R_lt_0 _ (Float radix2 (Zneg m1) e0)).
-  now apply (F2R_gt_0 _ (Float radix2 (Zpos m2) e2)).
-  }
-  unfold F2R, Fnum, Fexp.
-  destruct s, s0; try (now apply_Rcompare; apply H5); inversion H3;
-    try (apply_Rcompare; apply H4; rewrite H, H1 in H7; assumption);
-    try (apply_Rcompare; do 2 rewrite opp_IZR, Ropp_mult_distr_l_reverse;
-      apply Ropp_lt_contravar; apply H4; rewrite H, H1 in H7; assumption);
-    rewrite H7, Rcompare_mult_r, Rcompare_IZR by (apply bpow_gt_0); reflexivity.
+- now apply Hc.
 Qed.
 
 Theorem Bcompare_swap :
