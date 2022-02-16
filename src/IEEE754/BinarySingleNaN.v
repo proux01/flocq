@@ -595,6 +595,16 @@ intros ->.
 case Rcompare_spec; intro H; case Req_bool_spec; intro H'; try reflexivity; lra.
 Qed.
 
+Theorem Beqb_refl :
+  forall f, Beqb f f = negb (is_nan f).
+Proof.
+intros f.
+generalize (fun H => Beqb_correct f f H H).
+destruct f as [s|[|]| |s m e H] ; try easy.
+intros ->. 2: easy.
+now apply Req_bool_true.
+Qed.
+
 Definition Bltb (f1 f2 : binary_float) : bool := SFltb (B2SF f1) (B2SF f2).
 
 Theorem Bltb_correct :
