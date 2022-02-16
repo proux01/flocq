@@ -174,6 +174,25 @@ apply canonical_canonical_mantissa.
 now apply andb_prop in H.
 Qed.
 
+Lemma emin_lt_emax :
+  (emin < emax)%Z.
+Proof.
+unfold emin.
+unfold Prec_gt_0 in prec_gt_0_.
+unfold Prec_lt_emax in prec_lt_emax_.
+lia.
+Qed.
+
+Lemma fexp_emax :
+  fexp emax = (emax - prec)%Z.
+Proof.
+apply Z.max_l.
+unfold emin.
+unfold Prec_gt_0 in prec_gt_0_.
+unfold Prec_lt_emax in prec_lt_emax_.
+lia.
+Qed.
+
 Theorem generic_format_B2R :
   forall x,
   generic_format radix2 fexp (B2R x).
@@ -639,45 +658,38 @@ Theorem bounded_le_emax_minus_prec :
   (F2R (Float radix2 (Zpos mx) ex)
    <= bpow radix2 emax - bpow radix2 (emax - prec))%R.
 Proof.
+clear prec_lt_emax_.
 intros mx ex Hx.
-destruct (andb_prop _ _ Hx) as (H1,H2).
-generalize (Zeq_bool_eq _ _ H1). clear H1. intro H1.
-generalize (Zle_bool_imp_le _ _ H2). clear H2. intro H2.
-generalize (mag_F2R_Zdigits radix2 (Zpos mx) ex).
-destruct (mag radix2 (F2R (Float radix2 (Zpos mx) ex))) as (e',Ex).
-unfold mag_val.
-intros H.
-elim Ex; [|now apply Rgt_not_eq, F2R_gt_0]; intros _.
-rewrite <-F2R_Zabs; simpl; clear Ex; intros Ex.
-generalize (Rmult_lt_compat_r (bpow radix2 (-ex)) _ _ (bpow_gt_0 _ _) Ex).
-unfold F2R; simpl; rewrite Rmult_assoc, <-!bpow_plus.
-rewrite H; [|intro H'; discriminate H'].
-rewrite <-Z.add_assoc, Z.add_opp_diag_r, Z.add_0_r, Rmult_1_r.
-rewrite <-(IZR_Zpower _ _ (Zdigits_ge_0 _ _)); clear Ex; intro Ex.
-generalize (Zlt_le_succ _ _ (lt_IZR _ _ Ex)); clear Ex; intro Ex.
-generalize (IZR_le _ _ Ex).
-rewrite succ_IZR; clear Ex; intro Ex.
-generalize (Rplus_le_compat_r (-1) _ _ Ex); clear Ex; intro Ex.
-ring_simplify in Ex; revert Ex.
-rewrite (IZR_Zpower _ _ (Zdigits_ge_0 _ _)); intro Ex.
-generalize (Rmult_le_compat_r (bpow radix2 ex) _ _ (bpow_ge_0 _ _) Ex).
-intro H'; apply (Rle_trans _ _ _ H').
-rewrite Rmult_minus_distr_r, Rmult_1_l, <-bpow_plus.
-revert H1; unfold fexp, FLT_exp; intro H1.
-generalize (Z.le_max_l (Z.pos (digits2_pos mx) + ex - prec) emin).
-
-rewrite H1; intro H1'.
-generalize (proj1 (Z.le_sub_le_add_r _ _ _) H1').
-rewrite Zpos_digits2_pos; clear H1'; intro H1'.
-apply (Rle_trans _ _ _ (Rplus_le_compat_r _ _ _ (bpow_le _ _ _ H1'))).
-replace emax with (emax - prec - ex + (ex + prec))%Z at 1 by ring.
-replace (emax - prec)%Z with (emax - prec - ex + ex)%Z at 2 by ring.
-do 2 rewrite (bpow_plus _ (emax - prec - ex)).
-rewrite <-Rmult_minus_distr_l.
-rewrite <-(Rmult_1_l (_ + _)).
-apply Rmult_le_compat_r.
-{ apply Rle_0_minus, bpow_le; unfold Prec_gt_0 in prec_gt_0_; lia. }
-change 1%R with (bpow radix2 0); apply bpow_le; lia.
+apply Rle_trans with ((bpow radix2 (Zdigits radix2 (Z.pos mx)) - 1) * bpow radix2 ex)%R.
+- apply Rmult_le_compat_r.
+  apply bpow_ge_0.
+  rewrite <- IZR_Zpower by apply Zdigits_ge_0.
+  rewrite <- minus_IZR.
+  apply IZR_le.
+  apply Z.lt_le_pred.
+  rewrite <- (Z.abs_eq (Z.pos mx)) by easy.
+  apply Zdigits_correct.
+- destruct (andb_prop _ _ Hx) as [H1 H2].
+  apply Rle_trans with (bpow radix2 (ex + prec) - bpow radix2 ex)%R.
+  { rewrite Rmult_minus_distr_r, Rmult_1_l, <- bpow_plus.
+    apply Rplus_le_compat_r.
+    apply bpow_le.
+    apply Zeq_bool_eq in H1.
+    rewrite Zpos_digits2_pos in H1.
+    unfold fexp, FLT_exp in H1.
+    clear -H1 ; lia. }
+  replace emax with (emax - prec - ex + (ex + prec))%Z at 1 by ring.
+  replace (emax - prec)%Z with (emax - prec - ex + ex)%Z at 2 by ring.
+  do 2 rewrite (bpow_plus _ (emax - prec - ex)).
+  rewrite <- Rmult_minus_distr_l.
+  rewrite <- (Rmult_1_l (_ - _)) at 1.
+  apply Rmult_le_compat_r.
+  + apply Rle_0_minus, bpow_le.
+    unfold Prec_gt_0 in prec_gt_0_.
+    clear -prec_gt_0_ ; lia.
+  + apply (bpow_le radix2 0).
+    apply Zle_minus_le_0.
+    now apply Zle_bool_imp_le.
 Qed.
 
 Theorem bounded_lt_emax :
@@ -706,6 +718,27 @@ rewrite Zpos_digits2_pos.
 unfold fexp, FLT_exp.
 intros ; lia.
 Qed.
+
+(* needs prec_lt_emax_, so backward-incompatible
+Theorem bounded_le_emax_minus_prec :
+  forall mx ex,
+  bounded mx ex = true ->
+  (F2R (Float radix2 (Zpos mx) ex)
+   <= bpow radix2 emax - bpow radix2 (emax - prec))%R.
+Proof.
+intros mx ex Bx.
+rewrite <- fexp_emax.
+rewrite <- pred_bpow.
+apply pred_ge_gt.
+- exact fexp_correct.
+- apply generic_format_canonical.
+  now apply (canonical_bounded false).
+- apply generic_format_FLT_bpow.
+  exact prec_gt_0_.
+  apply Zlt_le_weak, emin_lt_emax.
+- now apply bounded_lt_emax.
+Qed.
+*)
 
 Theorem bounded_ge_emin :
   forall mx ex,
@@ -799,9 +832,7 @@ rewrite F2R_Zabs.
 apply Ex.
 apply Rgt_not_eq.
 now apply F2R_gt_0.
-unfold emin.
-generalize (prec_gt_0 prec) (prec_lt_emax prec emax).
-clear ; lia.
+apply Z.max_l_iff, fexp_emax.
 Qed.
 
 (** Truncation *)
@@ -1010,9 +1041,8 @@ rewrite Bool.andb_true_r.
 apply Zeq_bool_true.
 rewrite Zpos_digits2_pos.
 replace (Zdigits radix2 _) with prec.
-unfold fexp, FLT_exp, emin.
-generalize (prec_gt_0 prec) (prec_lt_emax prec emax).
-clear ; zify ; lia.
+ring_simplify (prec + (emax - prec))%Z.
+apply fexp_emax.
 change 2%Z with (radix_val radix2).
 assert (H: (0 < radix2 ^ prec - 1)%Z).
   apply Zlt_succ_pred.
@@ -1592,8 +1622,7 @@ split.
 now rewrite is_finite_SF2B.
 rewrite Bsign_SF2B, Rz''.
 rewrite Rcompare_Gt...
-apply F2R_gt_0.
-simpl. lia.
+now apply F2R_gt_0.
 intros Hz' (Vz, Rz).
 rewrite B2SF_SF2B, Rz.
 apply f_equal.
@@ -1611,8 +1640,7 @@ split.
 now rewrite is_finite_SF2B.
 rewrite Bsign_SF2B, Rz''.
 rewrite Rcompare_Lt...
-apply F2R_lt_0.
-simpl. lia.
+now apply F2R_lt_0.
 intros Hz' (Vz, Rz).
 rewrite B2SF_SF2B, Rz.
 apply f_equal.
@@ -2327,7 +2355,7 @@ rewrite round_generic; [|now apply valid_rnd_N|].
 - unfold F2R; simpl; rewrite Rmult_1_r.
   rewrite Rlt_bool_true.
   + now intros (Hr, Hr'); rewrite Hr.
-  + rewrite Rabs_pos_eq; [|lra].
+  + rewrite Rabs_R1.
     change 1%R with (bpow radix2 0); apply bpow_lt.
     generalize (prec_gt_0 prec) (prec_lt_emax prec emax).
     lia.
@@ -2384,30 +2412,26 @@ unfold valid_binary, bounded; apply andb_true_intro; split.
   { unfold p; rewrite Zpos_digits2_pos, Pos2Z.inj_sub.
     - rewrite shift_pos_correct, Z.mul_1_r.
       assert (P2pm1 : (0 <= 2 ^ prec - 1)%Z).
-      { apply (Zplus_le_reg_r _ _ 1); ring_simplify.
-        change 1%Z with (2 ^ 0)%Z; change 2%Z with (radix2 : Z).
-        apply Zpower_le; unfold Prec_gt_0 in prec_gt_0_; lia. }
-      apply Zdigits_unique;
+      { apply Z.lt_le_pred.
+        apply (Zpower_gt_0 radix2).
+        now apply Zlt_le_weak. }
+      apply Zdigits_unique ;
         rewrite Z.pow_pos_fold, Z2Pos.id; [|exact prec_gt_0_]; simpl; split.
       + rewrite (Z.abs_eq _ P2pm1).
-        replace prec with (prec - 1 + 1)%Z at 2 by ring.
-        rewrite Zpower_plus; [| unfold Prec_gt_0 in prec_gt_0_; lia|lia].
-        simpl; unfold Z.pow_pos; simpl.
-        assert (1 <= 2 ^ (prec - 1))%Z; [|lia].
-        change 1%Z with (2 ^ 0)%Z; change 2%Z with (radix2 : Z).
-        apply Zpower_le; simpl; unfold Prec_gt_0 in prec_gt_0_; lia.
-      + now rewrite Z.abs_eq; [lia|].
-    - change (_ < _)%positive
-        with (Z.pos 1 < Z.pos (shift_pos (Z.to_pos prec) 1))%Z.
+        apply Z.lt_le_pred.
+        apply (Zpower_lt radix2).
+        now apply Zlt_le_weak.
+        apply Z.lt_pred_l.
+      + rewrite Z.abs_eq by easy.
+        apply Z.lt_pred_l.
+    - change (Z.pos 1 < Z.pos (shift_pos (Z.to_pos prec) 1))%Z.
       rewrite shift_pos_correct, Z.mul_1_r, Z.pow_pos_fold.
       rewrite Z2Pos.id; [|exact prec_gt_0_].
-      change 1%Z with (2 ^ 0)%Z; change 2%Z with (radix2 : Z).
-      apply Zpower_lt; unfold Prec_gt_0 in prec_gt_0_; lia. }
-  unfold fexp, FLT_exp; rewrite H, Z.max_l; [ring|].
-  unfold emin.
-  generalize (prec_gt_0 prec) (prec_lt_emax prec emax).
-  lia.
-- apply Zle_bool_true; unfold emin; unfold Prec_gt_0 in prec_gt_0_; lia.
+      now apply (Zpower_gt_1 radix2). }
+  rewrite H.
+  ring_simplify (prec + (emax - prec))%Z.
+  apply fexp_emax.
+- apply Zle_bool_true, Z.le_refl.
 Qed.
 
 Definition Bmax_float := SF2B _ Bmax_float_proof.
@@ -2580,15 +2604,15 @@ case (Pos.leb_spec _ _); simpl; intro Dmx.
       change (/ 2)%R with (bpow radix2 (- 1)); rewrite <-bpow_plus.
       rewrite <-Dmx'', Z.add_comm, Zpos_digits2_pos, Zdigits_mag; [|lia].
       set (b := bpow _ _).
-      rewrite <-(Rabs_pos_eq (IZR _)); [|apply IZR_le; lia].
-      apply bpow_mag_le; apply IZR_neq; lia.
+      rewrite <- (Rabs_pos_eq (IZR _)) by now apply IZR_le.
+      now apply bpow_mag_le, IZR_neq.
     * apply (Rmult_lt_reg_r (bpow radix2 prec)); [now apply bpow_gt_0|].
       rewrite Rmult_assoc, <-bpow_plus, Z.add_opp_diag_l; simpl.
       rewrite Rmult_1_l, Rmult_1_r.
       rewrite <-Dmx'', Zpos_digits2_pos, Zdigits_mag; [|lia].
       set (b := bpow _ _).
-      rewrite <-(Rabs_pos_eq (IZR _)); [|apply IZR_le; lia].
-      apply bpow_mag_gt; apply IZR_neq; lia.
+      rewrite <- (Rabs_pos_eq (IZR _)) by now apply IZR_le.
+      apply bpow_mag_gt.
   + rewrite Rmult_assoc, <- bpow_plus.
     now replace (_ + _)%Z with ex by ring.
 - unfold bounded, F2R; simpl.
@@ -2618,15 +2642,15 @@ case (Pos.leb_spec _ _); simpl; intro Dmx.
       rewrite <-Rmult_assoc, <-bpow_plus, Z.add_opp_diag_r.
       rewrite Rmult_1_l.
       change (/ 2)%R with (bpow radix2 (- 1)); rewrite <-bpow_plus.
-      rewrite <-(Rabs_pos_eq (IZR _)); [|apply IZR_le; lia].
+      rewrite <- (Rabs_pos_eq (IZR _)) by now apply IZR_le.
       unfold d; rewrite Zpos_digits2_pos, Zdigits_mag; [|lia].
-      apply bpow_mag_le; apply IZR_neq; lia.
+      now apply bpow_mag_le, IZR_neq.
     * apply (Rmult_lt_reg_l (bpow radix2 d)); [now apply bpow_gt_0|].
       rewrite <-Rmult_assoc, <-bpow_plus, Z.add_opp_diag_r.
       rewrite Rmult_1_l, Rmult_1_r.
-      rewrite <-(Rabs_pos_eq (IZR _)); [|apply IZR_le; lia].
+      rewrite <- (Rabs_pos_eq (IZR _)) by now apply IZR_le.
       unfold d; rewrite Zpos_digits2_pos, Zdigits_mag; [|lia].
-      apply bpow_mag_gt; apply IZR_neq; lia.
+      apply bpow_mag_gt.
   + rewrite Rmult_assoc, <-bpow_plus, shift_pos_correct.
     rewrite IZR_cond_Zopp, mult_IZR, cond_Ropp_mult_r, <-IZR_cond_Zopp.
     change (IZR (Z.pow_pos _ _))
@@ -2686,9 +2710,7 @@ Proof.
 unfold bounded, canonical_mantissa.
 rewrite Zeq_bool_true.
 apply Zle_bool_true.
-unfold emin.
-generalize (prec_gt_0 prec) (prec_lt_emax prec emax).
-lia.
+apply Z.max_l_iff, fexp_emax.
 apply Z.max_r.
 simpl digits2_pos.
 generalize (prec_gt_0 prec).
@@ -2796,7 +2818,7 @@ assert (B2R (Bulp' x) = ulp radix2 fexp (B2R x) /\
       now unfold FLT_exp; rewrite Z.max_r;
         [|unfold Prec_gt_0 in prec_gt_0_; lia].
     * rewrite Rabs_pos_eq; [|now apply bpow_ge_0]; apply bpow_lt.
-      unfold emin; unfold Prec_gt_0 in prec_gt_0_; lia.
+      apply emin_lt_emax.
   + simpl; change (fexp _) with (fexp (-2 * emax - prec)).
     unfold fexp, FLT_exp; rewrite Z.max_r; [reflexivity|].
     unfold emin; unfold Prec_gt_0 in prec_gt_0_; lia.
@@ -2819,8 +2841,8 @@ assert (B2R (Bulp' x) = ulp radix2 fexp (B2R x) /\
         unfold e', fexp, FLT_exp.
         apply bpow_lt.
         case (Z.max_spec (mag radix2 (B2R f) - prec) emin)
-          as [(_, Hm)|(_, Hm)]; rewrite Hm;
-          [now unfold emin; unfold Prec_gt_0 in prec_gt_0_; lia|].
+          as [(_, Hm)|(_, Hm)]; rewrite Hm.
+        apply emin_lt_emax.
         apply (Zplus_lt_reg_r _ _ prec); ring_simplify.
         assert (mag radix2 (B2R f) <= emax)%Z;
           [|now unfold Prec_gt_0 in prec_gt_0_; lia].
@@ -2881,9 +2903,7 @@ intros [sx|sx| | [|] mx ex Bx] Hx ; try easy ; clear Hx.
   now case sx.
   apply F2R_bpow.
   apply bpow_lt.
-  unfold emin.
-  generalize (prec_gt_0 prec) (prec_lt_emax prec emax).
-  lia.
+  apply emin_lt_emax.
 - change (B2R (B754_finite _ _ _ _)) with (F2R (Fopp (Float radix2 (Zpos mx) ex))).
   rewrite F2R_opp, succ_opp.
   rewrite Rlt_bool_true ; cycle 1.
@@ -3092,10 +3112,7 @@ assert (B2R (Bpred_pos' x) = pred_pos radix2 fexp (B2R x) /\
   set (x' := B754_finite _ _ _ _).
   set (xr := F2R _).
   assert (Nzxr : xr <> 0%R).
-  { unfold xr, F2R; simpl.
-    rewrite <-(Rmult_0_l (bpow radix2 ex)); intro H.
-    apply Rmult_eq_reg_r in H; [|apply Rgt_not_eq, bpow_gt_0].
-    apply eq_IZR in H; lia. }
+  { now apply F2R_neq_0. }
   assert (Hulp := Bulp_correct x' (eq_refl _)).
   rewrite <- (Bulp'_correct Hp x') in Hulp by easy.
   assert (Hldexp := Bldexp_correct mode_NE Bone (fexp (mag radix2 xr - 1))).
@@ -3112,7 +3129,7 @@ assert (B2R (Bpred_pos' x) = pred_pos radix2 fexp (B2R x) /\
   { apply Rlt_bool_true; rewrite round_generic;
       [|apply valid_rnd_round_mode|apply Fbpowxr].
     rewrite Rabs_pos_eq; [|apply bpow_ge_0]; apply bpow_lt.
-    apply Z.max_lub_lt; [|unfold emin; unfold Prec_gt_0 in prec_gt_0_; lia].
+    apply Z.max_lub_lt. 2: apply emin_lt_emax.
     apply (Zplus_lt_reg_r _ _ (prec + 1)); ring_simplify.
     rewrite Z.add_1_r; apply Zle_lt_succ, mag_le_bpow.
     - exact Nzxr.
@@ -3294,12 +3311,8 @@ destruct x as [sx|sx| |sx mx ex Bx] ; try easy.
   easy.
   rewrite H1.
   apply eq_sym, F2R_bpow.
-  rewrite Rabs_pos_eq.
-  apply bpow_lt.
-  unfold emin.
-  generalize (prec_gt_0 prec) (prec_lt_emax prec emax).
-  lia.
-  apply bpow_ge_0.
+  rewrite Rabs_pos_eq by now apply bpow_ge_0.
+  apply bpow_lt, emin_lt_emax.
   apply valid_rnd_N.
   apply generic_format_bpow.
   unfold fexp.
@@ -3354,9 +3367,7 @@ assert (H:
         rewrite opp_IZR, <-Ropp_mult_distr_l, <-Ropp_0; apply Ropp_le_contravar.
         now apply Rmult_le_pos; [apply IZR_le|apply bpow_ge_0]. }
       rewrite Hsucc; apply bpow_lt.
-      unfold emin.
-      generalize (prec_gt_0 prec) (prec_lt_emax prec emax).
-      lia.
+      apply emin_lt_emax.
   + fold x.
     assert (Hulp := Bulp_correct x (eq_refl _)).
     assert (Hplus := Bplus_correct mode_NE x (Bulp x) (eq_refl _)).
