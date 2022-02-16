@@ -15,7 +15,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 COPYING file for more details.
 *)
 
-From Coq Require Import Reals Psatz.
+From Coq Require Import ZArith Reals Psatz.
 From Flocq Require Import Core Relative Sterbenz Operations.
 From Interval Require Import Tactic.
 

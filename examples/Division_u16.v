@@ -15,8 +15,9 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 COPYING file for more details.
 *)
 
-Require Import Reals Psatz.
-Require Import Flocq.Core.Core Gappa.Gappa_tactic.
+From Coq Require Import ZArith Reals Psatz.
+From Flocq Require Import Core.
+From Gappa Require Import Gappa_tactic.
 
 Open Scope R_scope.
 
