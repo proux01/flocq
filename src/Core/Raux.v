@@ -66,15 +66,6 @@ Qed.
 Theorem Rabs_eq_R0 x : (Rabs x = 0 -> x = 0)%R.
 Proof. split_Rabs; lra. Qed.
 
-Theorem Rplus_eq_reg_r :
-  forall r r1 r2 : R,
-  (r1 + r = r2 + r)%R -> (r1 = r2)%R.
-Proof.
-intros r r1 r2 H.
-apply Rplus_eq_reg_l with r.
-now rewrite 2!(Rplus_comm r).
-Qed.
-
 Theorem Rmult_lt_compat :
   forall r1 r2 r3 r4,
   (0 <= r1)%R -> (0 <= r3)%R -> (r1 < r2)%R -> (r3 < r4)%R ->
@@ -88,15 +79,6 @@ apply Rle_lt_trans with (r1 * r4)%R.
 - apply Rmult_lt_compat_r.
   + now apply Rle_lt_trans with r3.
   + exact H12.
-Qed.
-
-Theorem Rmult_minus_distr_r :
-  forall r r1 r2 : R,
-  ((r1 - r2) * r = r1 * r - r2 * r)%R.
-Proof.
-intros r r1 r2.
-rewrite <- 3!(Rmult_comm r).
-apply Rmult_minus_distr_l.
 Qed.
 
 Lemma Rmult_neq_reg_r :
@@ -114,7 +96,6 @@ Proof.
 intros r1 r2 r3 H H1 H2.
 now apply H1, Rmult_eq_reg_r with r1.
 Qed.
-
 
 Theorem Rmult_min_distr_r :
   forall r r1 r2 : R,
@@ -243,18 +224,6 @@ Lemma Rsqr_le_abs_0_alt :
 Proof.
 intros x y H.
 apply (Rle_trans _ (Rabs x)); [apply Rle_abs|apply (Rsqr_le_abs_0 _ _ H)].
-Qed.
-
-Theorem Rabs_le :
-  forall x y,
-  (-y <= x <= y)%R -> (Rabs x <= y)%R.
-Proof.
-intros x y (Hyx,Hxy).
-unfold Rabs.
-case Rcase_abs ; intros Hx.
-apply Ropp_le_cancel.
-now rewrite Ropp_involutive.
-exact Hxy.
 Qed.
 
 Theorem Rabs_le_inv :
