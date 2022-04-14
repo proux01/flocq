@@ -95,7 +95,7 @@ html/index.html: $(OBJS)
 	rm -rf html
 	mkdir -p html
 	@COQDOC@ -toc -interpolate -utf8 -html -g -R src Flocq -d html \
-	  --coqlib http://coq.inria.fr/distrib/current/stdlib \
+	  --coqlib_url http://coq.inria.fr/distrib/current/stdlib \
 	  $(addprefix src/,$(FILES))
 	for f in html/*.html; do
 	  sed -e 's;<a href="index.html">Index</a>;Go back to the <a href="../index.html">Main page</a> or <a href="index.html">Index</a>.;' -i $f
