@@ -1239,8 +1239,6 @@ apply Rmult_lt_compat_r with (2 := H1).
 now apply IZR_lt.
 Qed.
 
-Section Zdiv_Rdiv.
-
 Theorem Zfloor_div :
   forall x y,
   y <> Z0 ->
@@ -1299,7 +1297,36 @@ apply Rplus_lt_compat_l.
 apply H.
 Qed.
 
-End Zdiv_Rdiv.
+Theorem Ztrunc_div :
+  forall x y, y <> 0%Z ->
+  Ztrunc (IZR x / IZR y) = Z.quot x y.
+Proof.
+  destruct y; [easy | |]; destruct x; intros _.
+  - rewrite Z.quot_0_l; [| easy]. unfold Rdiv. rewrite Rmult_0_l.
+    rewrite Ztrunc_floor; [| apply Rle_refl]. now rewrite Zfloor_IZR.
+  - rewrite Z.quot_div_nonneg; [| easy | easy]. rewrite <-Zfloor_div; [| easy].
+    unfold Ztrunc. rewrite Rlt_bool_false; [reflexivity |].
+    apply Rle_mult_inv_pos; [now apply IZR_le | now apply IZR_lt].
+  - rewrite <-Pos2Z.opp_pos. rewrite Z.quot_opp_l; [| easy].
+    rewrite Z.quot_div_nonneg; [| easy | easy]. rewrite <-Zfloor_div; [| easy].
+    rewrite Ropp_Ropp_IZR. rewrite Ropp_div. unfold Ztrunc. rewrite Rlt_bool_true.
+    + unfold Zceil. now rewrite Ropp_involutive.
+    + apply Ropp_lt_gt_0_contravar. apply Rdiv_lt_0_compat; now apply IZR_lt.
+  - rewrite Z.quot_0_l; [| easy]. unfold Rdiv. rewrite Rmult_0_l.
+    rewrite Ztrunc_floor; [| apply Rle_refl]. now rewrite Zfloor_IZR.
+  - rewrite <-Pos2Z.opp_pos. rewrite Z.quot_opp_r; [| easy].
+    rewrite Z.quot_div_nonneg; [| easy | easy]. rewrite <-Zfloor_div; [| easy].
+    rewrite Ropp_Ropp_IZR. rewrite Ropp_div_den; [| easy]. unfold Ztrunc.
+    rewrite Rlt_bool_true.
+    + unfold Zceil. now rewrite Ropp_involutive.
+    + apply Ropp_lt_gt_0_contravar. apply Rdiv_lt_0_compat; now apply IZR_lt.
+  - rewrite <-2Pos2Z.opp_pos. rewrite Z.quot_opp_l; [| easy]. rewrite Z.quot_opp_r; [| easy].
+    rewrite Z.quot_div_nonneg; [| easy | easy]. rewrite <-Zfloor_div; [| easy].
+    rewrite 2Ropp_Ropp_IZR. rewrite Ropp_div. rewrite Ropp_div_den; [| easy].
+    rewrite Z.opp_involutive. rewrite Ropp_involutive.
+    unfold Ztrunc. rewrite Rlt_bool_false; [reflexivity |].
+    apply Rle_mult_inv_pos; [now apply IZR_le | now apply IZR_lt].
+Qed.
 
 Section pow.
 
