@@ -2207,6 +2207,15 @@ now apply Rabs_left.
 now apply Rabs_pos_eq.
 Qed.
 
+Theorem Rlt_bool_cond_Ropp :
+  forall x sx, (0 < x)%R ->
+  Rlt_bool (cond_Ropp sx x) 0 = sx.
+Proof.
+  intros x sx Hx. destruct sx; simpl.
+  - apply Rlt_bool_true. now apply Ropp_lt_gt_0_contravar.
+  - apply Rlt_bool_false. now left.
+Qed.
+
 Theorem cond_Ropp_involutive :
   forall b x,
   cond_Ropp b (cond_Ropp b x) = x.
