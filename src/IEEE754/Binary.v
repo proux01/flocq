@@ -864,14 +864,14 @@ Qed.
 
 Notation shr_fexp := (shr_fexp prec emax) (only parsing).
 
-Theorem shr_truncate :
+Theorem shr_fexp_truncate :
   forall m e l,
   (0 <= m)%Z ->
   shr_fexp m e l =
   let '(m', e', l') := truncate radix2 fexp (m, e, l) in (shr_record_of_loc m' l', e').
 Proof.
 intros m e l.
-now apply shr_truncate.
+now apply shr_fexp_truncate.
 Qed.
 
 (** Rounding modes *)
@@ -1207,6 +1207,34 @@ replace (BSN.Bsqrt _ _) with (B2BSN (Bsqrt sqrt_nan mode x)) by apply B2BSN_BSN2
 intros H.
 destruct x as [sx|[|]|sx plx Hplx|sx mx ex Hx] ; try easy.
 now destruct Bsqrt.
+Qed.
+
+(** NearbyInt and Trunc **)
+
+Definition Bnearbyint nearbyint_nan m x :=
+  BSN2B (nearbyint_nan x) (Bnearbyint m (B2BSN x)).
+
+Theorem Bnearbyint_correct :
+  forall nearbyint_nan md x,
+  B2R (Bnearbyint nearbyint_nan md x) = round radix2 (FIX_exp 0) (round_mode md) (B2R x) /\
+  is_finite (Bnearbyint nearbyint_nan md x) = is_finite x /\
+  (is_nan (Bnearbyint nearbyint_nan md x) = false -> Bsign (Bnearbyint nearbyint_nan md x) = Bsign x).
+Proof.
+intros nearbyint_nan mode x.
+generalize (Bnearbyint_correct prec emax _ mode (B2BSN x)).
+replace (BSN.Bnearbyint _ _) with (B2BSN (Bnearbyint nearbyint_nan mode x)) by apply B2BSN_BSN2B.
+intros H.
+destruct x as [sx|[|]|sx plx Hplx|sx mx ex Hx] ; try easy.
+now destruct Bnearbyint.
+Qed.
+
+Definition Btrunc x := Btrunc (B2BSN x).
+
+Theorem Btrunc_correct :
+  forall x,
+  IZR (Btrunc x) = round radix2 (FIX_exp 0) Ztrunc (B2R x).
+Proof.
+  intros x. rewrite <-B2R_B2BSN. now apply Btrunc_correct.
 Qed.
 
 (** A few values *)

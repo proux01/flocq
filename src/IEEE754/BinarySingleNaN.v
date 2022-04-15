@@ -921,9 +921,117 @@ intros (m, r, s) Hm.
 now destruct m as [|[m|m|]|m] ; try (now elim Hm) ; destruct r as [|] ; destruct s as [|].
 Qed.
 
-Notation shr_fexp := (shr_fexp prec emax).
+Lemma le_shr1_le :
+  forall mrs, (0 <= shr_m mrs)%Z ->
+  (0 <= 2 * shr_m (shr_1 mrs) <= shr_m mrs)%Z /\
+  (shr_m mrs < 2 * (shr_m (shr_1 mrs) + 1))%Z.
+Proof.
+  destruct mrs as [m r s]. simpl.
+  destruct m as [| p | p]; [simpl; lia | intros _ | intros; easy].
+  destruct p; simpl; [| | lia].
+  - rewrite Pos2Z.inj_xO, Pos2Z.inj_xI. lia.
+  - rewrite Pos2Z.inj_xO. lia.
+Qed.
+
+Lemma le_shr_le :
+  forall mrs e n,
+  (0 <= shr_m mrs)%Z -> (0 <= n)%Z ->
+  (0 <= 2 ^ n * shr_m (fst (shr mrs e n)) <= shr_m mrs)%Z /\
+  (shr_m mrs < 2 ^ n * (shr_m (fst (shr mrs e n)) + 1))%Z.
+Proof.
+  intros mrs e n Hmrs.
+  destruct n as [| n | n ];
+    [intros _; simpl; now destruct (shr_m mrs); simpl; lia | intro Hn | lia].
+  unfold shr.
+  rewrite iter_pos_nat. rewrite <-!(positive_nat_Z n). simpl fst.
+  induction (nat_of_P n) as [| n' IHn']; [simpl; destruct (shr_m mrs); simpl; lia |].
+  rewrite !Nat2Z.inj_succ. rewrite Z.pow_succ_r; [| apply Zle_0_nat].
+
+  rewrite iter_nat_S. rewrite (Z.mul_comm 2%Z _), <-Z.mul_assoc.
+  destruct IHn' as [[IHn'1 IHn'2] IHn'3]. apply Z.mul_nonneg_cancel_l in IHn'1; [| lia].
+  repeat split;
+    [| transitivity (2 ^ Z.of_nat n' * shr_m (iter_nat shr_1 n' mrs))%Z; [| auto] |].
+  - apply Z.mul_nonneg_nonneg; [lia |]. now apply le_shr1_le.
+  - apply Z.mul_le_mono_nonneg_l; [lia |]. now apply le_shr1_le.
+  - apply Z.lt_le_trans with
+      (2 ^ Z.of_nat n' * (shr_m (iter_nat shr_1 n' mrs) + 1))%Z; [assumption |].
+    rewrite <-Z.mul_assoc. apply Z.mul_le_mono_nonneg_l; [lia |].
+    apply Ztac.Zlt_le_add_1. now apply le_shr1_le.
+Qed.
+
+Lemma shr_limit :
+  forall mrs e n,
+  ((0 < shr_m mrs)%Z \/ shr_m mrs = 0%Z /\ (shr_r mrs || shr_s mrs = true)%bool) ->
+  (shr_m mrs < radix2 ^ (n - 1))%Z ->
+  fst (shr mrs e n) = {| shr_m := 0%Z; shr_r := false; shr_s := true |}.
+Proof.
+  intros mrs e n Hmrs0. set (n' := (n - 1)%Z). replace n with (n' + 1)%Z; [| lia].
+  destruct n' as [| p | p ].
+  - simpl. destruct Hmrs0 as [Hmrs0 | Hmrs0]; [lia | intros _].
+    destruct mrs as [m r s]. simpl in Hmrs0. destruct Hmrs0 as [Hmrs00 Hmrs01].
+    rewrite Hmrs00. simpl. now rewrite Hmrs01.
+  - intros Hmrs1. rewrite !Z.add_1_r. rewrite <-Pos2Z.inj_succ. simpl shr.
+    rewrite iter_pos_nat. rewrite Pos2Nat.inj_succ. simpl iter_nat.
+    rewrite <-(positive_nat_Z p) in Hmrs1. rewrite <-(Pos2Nat.id p) at 2.
+    revert Hmrs1. revert Hmrs0. revert mrs.
+    induction (nat_of_P p) as [| n'' IHn''].
+    + simpl in *. intros mrs [Hmrs0 | [Hmrs00 Hmrs01]] Hmrs1; [lia |].
+      destruct mrs as [m r s]. simpl in Hmrs00, Hmrs01, Hmrs1. rewrite Hmrs00.
+      simpl. now rewrite Hmrs01.
+    + intros mrs Hmrs0 Hmrs1. simpl iter_nat.
+      destruct (le_shr1_le mrs) as [[Hmrs'0 Hmrs'1] Hmrs'2]; [destruct Hmrs0; lia |].
+      set (mrs' := shr_1 mrs). apply IHn''.
+      * case (0 <? shr_m (shr_1 mrs))%Z eqn:Hmrs'3;
+         [apply Zlt_is_lt_bool in Hmrs'3; now left |].
+        fold mrs' in Hmrs'0, Hmrs'1, Hmrs'2, Hmrs'3.
+        apply Z.ltb_ge in Hmrs'3. apply Z.mul_nonneg_cancel_l in Hmrs'0; [| easy].
+        apply (Z.le_antisymm _ _ Hmrs'3) in Hmrs'0. right. split; [assumption |].
+        destruct Hmrs0 as [Hmrs0 | [Hmrs00 Hmrs01]].
+        -- rewrite Hmrs'0 in Hmrs'2. simpl in Hmrs'2.
+           assert (Hmrs2 : shr_m mrs = 1%Z) by lia. destruct mrs as [m r s].
+           simpl in Hmrs2. unfold mrs'. now rewrite Hmrs2.
+        -- destruct mrs as [m r s]. simpl in Hmrs00, Hmrs01. unfold mrs'.
+           now rewrite Hmrs00.
+      * simpl Z.of_nat in Hmrs1. unfold mrs'. rewrite Zpos_P_of_succ_nat in Hmrs1.
+        rewrite Z.pow_succ_r in Hmrs1; [| lia]. apply (Z.le_lt_trans _ _ _ Hmrs'1) in Hmrs1.
+        apply Z.mul_lt_mono_pos_l in Hmrs1; [assumption | easy].
+  - simpl. destruct Hmrs0 as [Hmrs0 | Hmrs0]; lia.
+Qed.
 
 Theorem shr_truncate :
+  forall f m e l,
+  Valid_exp f ->
+  (0 <= m)%Z ->
+  shr (shr_record_of_loc m l) e (f (Zdigits2 m + e) - e)%Z =
+  let '(m', e', l') := truncate radix2 f (m, e, l) in (shr_record_of_loc m' l', e').
+Proof.
+  intros f m e l Hf Hm. case_eq (truncate radix2 f (m, e, l)). intros (m', e') l'.
+  unfold shr_fexp. rewrite Zdigits2_Zdigits. case_eq (f (Zdigits radix2 m + e) - e)%Z.
+  - intros He. unfold truncate. rewrite He. simpl. intros H. now inversion H.
+  - intros p Hp. assert (He: (e <= f (Zdigits radix2 m + e))%Z); [ clear -Hp; lia |].
+    destruct (inbetween_float_ex radix2 m e l) as (x, Hx).
+    generalize (inbetween_shr x m e l (f (Zdigits radix2 m + e) - e) Hm Hx)%Z.
+    assert (Hx0 : (0 <= x)%R);
+     [apply Rle_trans with (F2R (Float radix2 m e));
+       [now apply F2R_ge_0
+       |exact (proj1 (inbetween_float_bounds _ _ _ _ _ Hx))]
+     |].
+    case_eq (shr (shr_record_of_loc m l) e (f (Zdigits radix2 m + e) - e))%Z.
+    intros mrs e'' H3 H4 H1.
+    generalize (truncate_correct radix2 _ x m e l Hx0 Hx (or_introl _ He)).
+    rewrite H1. intros (H2,_). rewrite <- Hp, H3.
+    assert (e'' = e').
+    { change (snd (mrs, e'') = snd (fst (m',e',l'))).  rewrite <- H1, <- H3.
+      unfold truncate. now rewrite Hp. }
+    rewrite H in H4 |- *. apply (f_equal (fun v => (v, _))).
+    destruct (inbetween_float_unique _ _ _ _ _ _ _ H2 H4) as (H5, H6).
+    rewrite H5, H6. case mrs. now intros m0 [|] [|].
+  - intros p Hp. unfold truncate. rewrite Hp. simpl. intros H. now inversion H.
+Qed.
+
+Notation shr_fexp := (shr_fexp prec emax).
+
+Theorem shr_fexp_truncate :
   forall m e l,
   (0 <= m)%Z ->
   shr_fexp m e l =
@@ -999,6 +1107,25 @@ Definition choice_mode m sx mx lx :=
   | mode_UP => cond_incr (round_sign_UP sx lx) mx
   | mode_NA => cond_incr (round_N true lx) mx
   end.
+
+Lemma le_choice_mode_le :
+  forall m sx mx lx, (mx <= choice_mode m sx mx lx <= mx + 1)%Z.
+Proof.
+  unfold choice_mode; intros m sx mx lx; case m; simpl; try lia; apply le_cond_incr_le.
+Qed.
+
+Lemma round_mode_choice_mode :
+  forall md x m l,
+  inbetween_int m (Rabs x) l ->
+  round_mode md x = cond_Zopp (Rlt_bool x 0) (choice_mode md (Rlt_bool x 0) m l).
+Proof.
+  destruct md.
+  - exact inbetween_int_NE_sign.
+  - exact inbetween_int_ZR_sign.
+  - exact inbetween_int_DN_sign.
+  - exact inbetween_int_UP_sign.
+  - exact inbetween_int_NA_sign.
+Qed.
 
 Global Instance valid_rnd_round_mode : forall m, Valid_rnd (round_mode m).
 Proof.
@@ -1127,7 +1254,7 @@ Proof with auto with typeclass_instances.
 intros m x mx ex lx Px Bx Ex z.
 unfold binary_round_aux in z.
 revert z.
-rewrite shr_truncate.
+rewrite shr_fexp_truncate.
 refine (_ (round_trunc_sign_any_correct' _ _ (round_mode m) (choice_mode m) _ x mx ex lx Bx (or_introl _ Ex))).
 rewrite <- cexp_abs in Ex.
 refine (_ (truncate_correct_partial' _ fexp _ _ _ _ _ Bx Ex)).
@@ -1159,7 +1286,7 @@ assert (Br: inbetween_float radix2 m1' e1 (Rabs (round radix2 fexp (round_mode m
 now apply inbetween_Exact.
 destruct m1' as [|m1'|m1'].
 (* . m1' = 0 *)
-rewrite shr_truncate. 2: apply Z.le_refl.
+rewrite shr_fexp_truncate. 2: apply Z.le_refl.
 generalize (truncate_0 radix2 fexp e1 loc_Exact).
 destruct (truncate radix2 fexp (Z0, e1, loc_Exact)) as ((m2, e2), l2).
 rewrite shr_m_shr_record_of_loc.
@@ -1190,7 +1317,7 @@ refine (_ (truncate_correct_partial _ _ _ _ _ _ _ Br He)).
 2: now rewrite Hr ; apply F2R_gt_0.
 refine (_ (truncate_correct_format radix2 fexp (Zpos m1') e1 _ _ He)).
 2: discriminate.
-rewrite shr_truncate. 2: easy.
+rewrite shr_fexp_truncate. 2: easy.
 destruct (truncate radix2 fexp (Zpos m1', e1, loc_Exact)) as ((m2, e2), l2).
 rewrite shr_m_shr_record_of_loc.
 intros (H3,H4) (H2,_).
@@ -1252,7 +1379,7 @@ Proof with auto with typeclass_instances.
 intros m x mx ex lx Bx Ex z.
 unfold binary_round_aux in z.
 revert z.
-rewrite shr_truncate. 2: easy.
+rewrite shr_fexp_truncate. 2: easy.
 refine (_ (round_trunc_sign_any_correct _ _ (round_mode m) (choice_mode m) _ x (Zpos mx) ex lx Bx (or_introl _ Ex))).
 refine (_ (truncate_correct_partial _ _ _ _ _ _ _ Bx Ex)).
 destruct (truncate radix2 fexp (Zpos mx, ex, lx)) as ((m1, e1), l1).
@@ -1283,7 +1410,7 @@ assert (Br: inbetween_float radix2 m1' e1 (Rabs (round radix2 fexp (round_mode m
 now apply inbetween_Exact.
 destruct m1' as [|m1'|m1'].
 (* . m1' = 0 *)
-rewrite shr_truncate. 2: apply Z.le_refl.
+rewrite shr_fexp_truncate. 2: apply Z.le_refl.
 generalize (truncate_0 radix2 fexp e1 loc_Exact).
 destruct (truncate radix2 fexp (Z0, e1, loc_Exact)) as ((m2, e2), l2).
 rewrite shr_m_shr_record_of_loc.
@@ -1314,7 +1441,7 @@ refine (_ (truncate_correct_partial _ _ _ _ _ _ _ Br He)).
 2: now rewrite Hr ; apply F2R_gt_0.
 refine (_ (truncate_correct_format radix2 fexp (Zpos m1') e1 _ _ He)).
 2: discriminate.
-rewrite shr_truncate. 2: easy.
+rewrite shr_fexp_truncate. 2: easy.
 destruct (truncate radix2 fexp (Zpos m1', e1, loc_Exact)) as ((m2, e2), l2).
 rewrite shr_m_shr_record_of_loc.
 intros (H3,H4) (H2,_).
@@ -2337,6 +2464,226 @@ split.
 now rewrite is_finite_SF2B.
 intros _.
 now rewrite Bsign_SF2B.
+Qed.
+
+(** NearbyInt and Trunc **)
+
+Definition SFnearbyint_binary_aux m sx mx ex :=
+  if (0 <=? ex)%Z then ((Z.pos mx) * 2 ^ ex)%Z else
+  let mrs := {| shr_m := Z.pos mx; shr_r := false; shr_s := false |} in
+  let mrs' := if (ex <? - prec)%Z then
+    {| shr_m := Z0; shr_r := false; shr_s := true |} else
+    fst (shr mrs ex (- ex)) in
+  let l' := loc_of_shr_record mrs' in
+  let mx' := shr_m mrs' in
+  choice_mode m sx mx' l'.
+
+Definition SFnearbyint_binary m sx mx ex :=
+  if (0 <=? ex)%Z then S754_finite sx mx ex else
+  let mx'' := SFnearbyint_binary_aux m sx mx ex in
+  match mx'' with
+  | Z.pos n =>
+    let (mx''', ex''') := shl_align_fexp n 0 in
+    S754_finite sx mx''' ex'''
+  | Z.neg n => S754_nan
+  | Z0      => S754_zero sx
+  end.
+
+Lemma Bnearbyint_correct_aux :
+  forall md sx mx ex (Hx : bounded mx ex = true),
+  let x := F2R (Float radix2 (cond_Zopp sx (Zpos mx)) ex) in
+  let z := SFnearbyint_binary md sx mx ex in
+  valid_binary z = true /\
+  SF2R radix2 z = (round radix2 (FIX_exp 0) (round_mode md) x) /\
+  is_finite_SF z = true /\ (is_nan_SF z = false -> sign_SF z = sx).
+Proof.
+  intros md sx mx ex Hmxex. simpl.
+  set (mrs' := if (ex <? - prec)%Z then
+    {| shr_m := Z0; shr_r := false; shr_s := true |} else
+    fst (shr {| shr_m := Z.pos mx; shr_r := false; shr_s := false |} ex (- ex))).
+  assert (mrs'_simpl : mrs' = fst (shr {| shr_m := Z.pos mx; shr_r := false; shr_s := false |} ex (- ex))).
+  { unfold mrs'. case Zlt_bool_spec; [ | easy]. intros Hex1. symmetry.
+    apply shr_limit; simpl; [now left |]. apply Z.lt_le_trans with (radix2 ^ prec)%Z.
+    - unfold bounded, canonical_mantissa, fexp in Hmxex. apply andb_prop in Hmxex.
+      destruct Hmxex as [Hmxex _]. apply Zeq_bool_eq in Hmxex.
+      rewrite Zpos_digits2_pos in Hmxex. apply Z.eq_le_incl in Hmxex.
+      apply Z.max_lub_l in Hmxex.
+      assert (Hmx : (Zdigits radix2 (Z.pos mx) <= prec)%Z) by lia.
+      replace (Z.pos mx) with (Z.abs (Z.pos mx)); [| now simpl].
+      now apply Zpower_gt_Zdigits.
+    - apply Zpower_le. lia.
+    }
+  assert (mrs'_ge_0 : (ex < 0)%Z -> (0 <= shr_m mrs')%Z).
+  (* N.B.: The hypothesis (ex < 0)%Z is only here to make the proof simpler. *)
+  { intros Hex.
+    rewrite mrs'_simpl.
+    apply (Z.mul_le_mono_pos_l _ _ (2 ^ (- ex))).
+    apply (Zpower_gt_0 radix2).
+    lia.
+    rewrite Z.mul_0_r.
+    apply le_shr_le.
+    easy.
+    lia. }
+  repeat split; unfold SFnearbyint_binary, SFnearbyint_binary_aux;
+  case Zle_bool_spec; intros Hex0; fold mrs'; auto.
+
+  - destruct choice_mode eqn:H0; auto.
+    unfold shl_align_fexp. destruct shl_align as [mx''' ex'''] eqn:H1; simpl.
+    unfold bounded, canonical_mantissa in Hmxex. apply andb_prop in Hmxex.
+    destruct Hmxex as [Hmxex Hex'].
+    unfold bounded, canonical_mantissa.
+    assert (A : (fexp (Z.pos (digits2_pos p) + 0) <= 0)%Z).
+    { rewrite Z.add_0_r in *. rewrite Zpos_digits2_pos in *.
+      destruct (le_shr_le mrs' ex (- ex)) as [H2 H3]; [now apply mrs'_ge_0 | lia |].
+      destruct (le_choice_mode_le md sx (shr_m mrs') (loc_of_shr_record mrs')) as [H4 H5].
+      rewrite H0 in H4, H5.
+      transitivity (fexp (Zdigits radix2 (shr_m mrs' + 1)));
+        [apply fexp_monotone; apply Zdigits_le; [lia | assumption] |
+      transitivity (fexp ((Zdigits radix2 (shr_m mrs') + 1)));
+        [apply fexp_monotone; apply Zdigits_succ_le; now apply mrs'_ge_0 |
+      transitivity (fexp (Zdigits radix2 ((shr_m {| shr_m := Z.pos mx; shr_r := false; shr_s := false |}) / (2 ^ (- ex))) + 1));
+        [apply fexp_monotone; apply Zplus_le_compat_r; apply Zdigits_le; simpl; auto | simpl
+      ]]].
+      - apply Zdiv.Zdiv_le_lower_bound; [lia |]. rewrite Z.mul_comm. rewrite mrs'_simpl.
+        apply le_shr_le; simpl; lia.
+      - transitivity (fexp (Zdigits radix2 (Z.pos mx / 2 ^ 1) + 1)).
+        + apply fexp_monotone. apply Zplus_le_compat_r. apply Zdigits_le.
+          * apply Z.div_pos; lia.
+          * apply Z.opp_pos_neg in Hex0. apply Z.div_le_compat_l; [lia |].
+            split; [lia |]. apply Z.pow_le_mono_r; lia.
+        + rewrite Zdigits_div_Zpower; [| lia |].
+          * rewrite Z.sub_add. apply Zeq_bool_eq in Hmxex. unfold fexp in *.
+            rewrite Z.max_lub_iff. split; [| lia]. apply (Zplus_le_reg_l _ _ ex).
+            rewrite Zplus_0_r. rewrite Z.add_sub_assoc. rewrite Z.add_comm.
+            rewrite <-Hmxex at 2. apply Z.le_max_l.
+          * split; [lia |]. replace 1%Z with (Zdigits radix2 (Z.pos 1)); [| easy].
+            apply Zdigits_le; lia. }
+    refine (_ (shl_align_correct' p 0 (fexp (Z.pos (digits2_pos p) + 0)) _)).
+    + rewrite H1. intros [H2 H3]. rewrite <-H3 in H2.
+      apply andb_true_intro; split.
+      * apply Zeq_bool_true. rewrite H3 at 2. rewrite !Zpos_digits2_pos.
+        rewrite <-!mag_F2R_Zdigits; [| lia | lia].
+        now apply (f_equal (fun f => fexp (mag radix2 f))).
+      * apply Zle_bool_true. rewrite H3. transitivity 0%Z; [assumption|].
+        apply Zle_minus_le_0. apply Z.lt_le_incl. apply prec_lt_emax_.
+    + assumption.
+
+  - symmetry. apply round_generic; auto.
+    + apply valid_rnd_round_mode.
+    + apply generic_format_FIX.
+      exists (Float radix2 (cond_Zopp sx (Z.pos mx) * Z.pow 2 ex) 0); auto.
+      simpl. rewrite <-(Z.sub_0_r ex) at 2. now apply F2R_change_exp.
+
+  - rewrite round_trunc_sign_any_correct with (choice := choice_mode md)
+      (m := Z.pos mx) (e := ex) (l := loc_Exact).
+    + fold (shr_record_of_loc (Z.pos mx) loc_Exact) in mrs'_simpl. rewrite mrs'_simpl.
+      replace (- ex)%Z with (FIX_exp 0 (Zdigits2 (Z.pos mx) + ex) - ex)%Z; [| auto].
+      rewrite !shr_truncate; [ | apply FIX_exp_valid | easy ].
+      destruct truncate as (rec, loc) eqn:H0. destruct rec as (z0, z1) eqn:H1.
+      simpl. rewrite shr_m_shr_record_of_loc. rewrite loc_of_shr_record_of_loc.
+      replace (Rlt_bool (F2R {| Fnum := cond_Zopp sx (Z.pos mx); Fexp := ex |}) 0) with sx.
+      * destruct choice_mode as [| p0 | p0] eqn:H2.
+        -- simpl. symmetry. rewrite cond_Zopp_0. apply F2R_0.
+        -- generalize (shl_align_fexp_correct p0 0).
+           destruct shl_align_fexp as (p1, z2). simpl. intros [H3 _].
+           rewrite !F2R_cond_Zopp. apply f_equal. simpl in H0.
+           rewrite Zlt_bool_true in H0; [| lia].
+           rewrite Z.add_opp_diag_r in H0. injection H0.
+           intros _ H4 _. now rewrite <-H4.
+        -- destruct (le_choice_mode_le md sx z0 loc) as [H3 _].
+           rewrite H2 in H3. simpl in H0.
+           rewrite Zlt_bool_true in H0 by lia.
+           injection H0. intros _ _ H4.
+           elim (Zle_not_lt 0 z0).
+           rewrite <- H4.
+           apply Z_div_pos.
+           apply Z.lt_gt, (Zpower_gt_0 radix2). lia.
+           easy.
+           now apply Z.le_lt_trans with (1 := H3).
+      * rewrite F2R_cond_Zopp. apply eq_sym, Rlt_bool_cond_Ropp.
+        now apply F2R_gt_0.
+    + apply FIX_exp_valid.
+    + apply valid_rnd_round_mode.
+    + apply round_mode_choice_mode.
+    + rewrite <-F2R_abs. simpl. rewrite abs_cond_Zopp. simpl. now apply inbetween_Exact.
+    + auto.
+
+  - destruct choice_mode eqn:H0; [easy | now destruct shl_align_fexp |].
+    apply mrs'_ge_0 in Hex0.
+    destruct (le_choice_mode_le md sx (shr_m mrs') (loc_of_shr_record mrs')) as [H2 H3].
+    rewrite H0 in H2, H3. lia.
+
+  - destruct choice_mode eqn:H0; [easy | now destruct shl_align_fexp | easy].
+Qed.
+
+Definition Bnearbyint md (x : binary_float) :=
+  match x with
+  | B754_nan => B754_nan
+  | B754_zero s => B754_zero s
+  | B754_infinity s => B754_infinity s
+  | B754_finite s m e H =>
+    SF2B _ (proj1 (Bnearbyint_correct_aux md s m e H))
+  end.
+
+Theorem Bnearbyint_correct :
+  forall md x,
+  B2R (Bnearbyint md x) = round radix2 (FIX_exp 0) (round_mode md) (B2R x) /\
+  is_finite (Bnearbyint md x) = is_finite x /\
+  (is_nan (Bnearbyint md x) = false -> Bsign (Bnearbyint md x) = Bsign x).
+Proof.
+  intros md.
+  assert (round_0_ : 0%R = (round radix2 (FIX_exp 0) (round_mode md) 0)).
+  { symmetry.
+    apply round_0.
+    apply valid_rnd_round_mode. }
+  intros [sx | sx | | sx mx ex Hx]; try easy.
+  unfold Bnearbyint. destruct Bnearbyint_correct_aux as [H1 [H2 [H3 H4]]]. repeat split.
+  - rewrite B2R_SF2B. easy.
+  - rewrite is_finite_SF2B. easy.
+  - rewrite is_nan_SF2B. rewrite Bsign_SF2B. easy.
+Qed.
+
+Definition Btrunc (x : binary_float) :=
+  match x with
+  | B754_finite s m e _ =>
+    cond_Zopp s (SFnearbyint_binary_aux mode_ZR s m e)
+  | _ => 0%Z
+  end.
+
+Theorem Btrunc_correct :
+  forall x,
+  IZR (Btrunc x) = round radix2 (FIX_exp 0) Ztrunc (B2R x).
+Proof.
+  assert (round_0_to_0 : 0%R = (round radix2 (FIX_exp 0) Ztrunc 0)).
+  { symmetry. apply round_0. apply valid_rnd_ZR. }
+  intros [sx | sx | | sx mx ex Hx]; simpl; try assumption.
+  destruct (Bnearbyint_correct_aux mode_ZR sx mx ex) as [_ [H0 _]]; [easy |].
+  simpl round_mode in H0. rewrite <-H0. unfold SFnearbyint_binary, SFnearbyint_binary_aux.
+  set (mrs' :=
+   (if (ex <? - prec)%Z
+    then {| shr_m := 0; shr_r := false; shr_s := true |}
+    else fst (shr {| shr_m := Z.pos mx; shr_r := false; shr_s := false |} ex (- ex)))).
+  fold mrs'.
+  set (n := choice_mode mode_ZR sx (shr_m mrs') (loc_of_shr_record mrs')).
+  fold n. case Zle_bool_spec; intros H1.
+  - simpl SF2R. unfold F2R. simpl Fnum. simpl bpow. destruct sx; unfold cond_Zopp;
+    [rewrite Zopp_mult_distr_l |]; rewrite mult_IZR; apply f_equal; destruct ex; easy.
+  - destruct n as [ | p | p] eqn:H2; [now destruct sx | |].
+    + generalize (shl_align_fexp_correct p 0). destruct shl_align_fexp.
+      simpl SF2R. unfold F2R. simpl. intros [H3 H4]. rewrite Rmult_1_r in H3.
+      destruct sx; unfold cond_Zopp; [| assumption].
+      rewrite 2Ropp_Ropp_IZR. rewrite <-Ropp_mult_distr_l. now rewrite H3.
+    + unfold n in H2.
+      destruct (le_choice_mode_le mode_ZR sx (shr_m mrs') (loc_of_shr_record mrs')) as [H3 _].
+      rewrite H2 in H3. unfold mrs' in H3. case (ex <? - prec)%Z in H3.
+      * simpl in H3. lia.
+      * destruct (le_shr_le ({| shr_m := Z.pos mx; shr_r := false; shr_s := false |})
+          ex (- ex)) as [[H4 _] _]; [simpl; lia | lia |].
+        elim (Zle_not_lt 0 (Z.neg p)). 2: easy.
+        apply Z.le_trans with (2 := H3).
+        apply Zmult_le_0_reg_r with (2 ^ (- ex))%Z.
+        apply Z.lt_gt, (Zpower_gt_0 radix2). lia.
+        now rewrite Zmult_comm.
 Qed.
 
 (** A few values *)
@@ -3438,6 +3785,8 @@ Arguments Bmult {prec} {emax} {prec_gt_0_} {prec_lt_emax_}.
 Arguments Bfma {prec} {emax} {prec_gt_0_} {prec_lt_emax_}.
 Arguments Bdiv {prec} {emax} {prec_gt_0_} {prec_lt_emax_}.
 Arguments Bsqrt {prec} {emax} {prec_gt_0_} {prec_lt_emax_}.
+Arguments Bnearbyint {prec} {emax} {prec_lt_emax_}.
+Arguments Btrunc {prec} {emax}.
 
 Arguments Bldexp {prec} {emax} {prec_gt_0_} {prec_lt_emax_}.
 Arguments Bnormfr_mantissa {prec} {emax}.

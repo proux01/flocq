@@ -114,6 +114,12 @@ Qed.
 
 Definition cond_incr (b : bool) m := if b then (m + 1)%Z else m.
 
+Lemma le_cond_incr_le :
+  forall b m, (m <= cond_incr b m <= m + 1)%Z.
+Proof.
+unfold cond_incr; intros b; case b; lia.
+Qed.
+
 Theorem inbetween_float_round_sign :
   forall rnd choice,
   ( forall x m l, inbetween_int m (Rabs x) l ->
