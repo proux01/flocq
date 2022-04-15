@@ -590,6 +590,16 @@ now case Rlt_bool.
 lia.
 Qed.
 
+Theorem inbetween_float_NA_sign :
+  forall x m l,
+  let e := cexp beta fexp x in
+  inbetween_float beta m e (Rabs x) l ->
+  round beta fexp ZnearestA x = F2R (Float beta (cond_Zopp (Rlt_bool x 0) (cond_incr (round_N true l) m)) e).
+Proof.
+apply inbetween_float_round_sign with (choice := fun s m l => cond_incr (round_N true l) m).
+exact inbetween_int_NA_sign.
+Qed.
+
 Definition truncate_aux t k :=
   let '(m, e, l) := t in
   let p := Zpower beta k in
