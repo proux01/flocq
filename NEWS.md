@@ -1,3 +1,9 @@
+Version 4.1.0
+-------------
+
+* added `Bnearbyint` and `Btrunc` in `IEEE754`
+* ensured compatibility from Coq 8.12 to 8.16
+
 Version 4.0.0
 -------------
 
