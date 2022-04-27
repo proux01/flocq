@@ -16,6 +16,7 @@
 /html/
 /public/
 /src/Version.v
+/src/IEEE754/Int63Compat.v
 *.vo
 *.vos
 *.vok
