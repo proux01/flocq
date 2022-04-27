@@ -3,4 +3,4 @@
 (* This is a compatibility module for Coq < 8.14 which does not provide
    Uint63. It is bound to disappear once Flocq requires Coq >= 8.14. *)
 
-@INT63_MODULE@.
+@INT63_EXPORT@

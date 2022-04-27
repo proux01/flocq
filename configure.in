@@ -31,9 +31,12 @@ AX_VERSION_GE([$coq_version], 8.12, [],
 AC_MSG_RESULT($coq_version)
 
 AX_VERSION_GE([$coq_version], 8.14,
-  [INT63_MODULE="Require Export Int63Copy"],
-  [INT63_MODULE="From Coq Require Export Int63"])
-AC_SUBST(INT63_MODULE)
+  [INT63_EXPORT="Require Export Int63Copy."
+   INT63_FILE="IEEE754/Int63Copy.v"],
+  [INT63_EXPORT="From Coq Require Export Int63."
+   INT63_FILE=""])
+AC_SUBST(INT63_EXPORT)
+AC_SUBST(INT63_FILE)
 
 AC_ARG_VAR(COQDEP, [Coq dependency analyzer command [coqdep]])
 AC_MSG_CHECKING([for coqdep])

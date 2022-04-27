@@ -30,6 +30,8 @@ FILES = \
 	IEEE754/BinarySingleNaN.v \
 	IEEE754/Binary.v \
 	IEEE754/Bits.v \
+	IEEE754/Int63Compat.v \
+	@INT63_FILE@ \
 	IEEE754/PrimFloat.v \
 	Pff/Pff.v \
 	Pff/Pff2FlocqAux.v \
@@ -61,7 +63,7 @@ check: $(EOBJS)
 
 check-more: $(MOBJS)
 
-CONFIGURED_FILES = Remakefile src/Version.v
+CONFIGURED_FILES = Remakefile src/Version.v src/IEEE754/Int63Compat.v
 
 $(CONFIGURED_FILES): %: %.in config.status
 	./config.status $@
@@ -70,7 +72,7 @@ configure config.status: configure.in
 	autoconf
 	./config.status --recheck
 
-%.vo: %.v
+%.vo: %.v | src/IEEE754/Int63Compat.v
 	@COQDEP@ -R src Flocq $< | @REMAKE@ -r $@
 	@COQC@ @COQEXTRAFLAGS@ -R src Flocq $<
 
