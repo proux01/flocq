@@ -214,7 +214,7 @@ destruct (Req_dec x 0) as [Zx|Nzx].
   unfold sqrt.
   destruct Rcase_abs.
   + reflexivity.
-  + casetype False.
+  + exfalso.
     now apply Nzx, Rle_antisym; [|apply Rge_le].
 Qed.
 

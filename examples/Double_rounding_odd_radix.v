@@ -416,7 +416,7 @@ assert (Hr1 : round beta fexp1 (Znearest choice1) x = rx1c).
     apply (Rmult_lt_reg_r (bpow ex1)); [now apply bpow_gt_0|]; bpow_simplify.
     assert (H : x <= rx1c); [now apply round_UP_pt|].
     destruct H as [H|H]; [exact H|].
-    casetype False; apply NF1x.
+    exfalso; apply NF1x.
     unfold generic_format, F2R, scaled_mantissa, cexp; simpl; fold ex1.
     rewrite Ztrunc_floor;
       [|now apply Rmult_le_pos;[apply Rlt_le|apply bpow_ge_0]].
@@ -667,7 +667,7 @@ destruct (Zle_or_lt (fexp1 ex) (fexp2 ex)) as [H2|H2].
     apply IZR_le.
     destruct (Zle_or_lt beta 2) as [Hb2|Hb2]; [|lia].
     assert (Hbeta' : beta = 2%Z :> Z); [now apply Zle_antisym|].
-    casetype False.
+    exfalso.
     rewrite <- Zodd_ex_iff in Obeta.
     apply (Zodd_not_Zeven _ Obeta).
     now rewrite Hbeta'.
@@ -2173,7 +2173,7 @@ destruct (Zle_or_lt (fexp1 ex) (fexp2 ex)) as [H2|H2].
     apply IZR_le.
     destruct (Zle_or_lt beta 2) as [Hb2|Hb2]; [|lia].
     assert (Hbeta' : beta = 2%Z :> Z); [now apply Zle_antisym|].
-    casetype False.
+    exfalso.
     rewrite <- Zodd_ex_iff in Obeta.
     apply (Zodd_not_Zeven _ Obeta).
     now rewrite Hbeta'.
@@ -2229,7 +2229,7 @@ destruct (Rtotal_order x 0) as [Nx|[Zx|Px]].
     apply generic_format_opp in Fy.
     now apply round_round_div_beta_odd_rna_aux.
   + (* y = 0 *)
-    now casetype False; apply Nzy.
+    now exfalso; apply Nzy.
   + (* y > 0 *)
     rewrite <- (Ropp_involutive x).
     rewrite Ropp_div.
@@ -2256,7 +2256,7 @@ destruct (Rtotal_order x 0) as [Nx|[Zx|Px]].
     apply generic_format_opp in Fy.
     now apply round_round_div_beta_odd_rna_aux.
   + (* y = 0 *)
-    now casetype False; apply Nzy.
+    now exfalso; apply Nzy.
   + (* y > 0 *)
     now apply round_round_div_beta_odd_rna_aux.
 Qed.
