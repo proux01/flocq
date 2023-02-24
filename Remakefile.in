@@ -74,11 +74,11 @@ configure config.status: configure.in
 
 %.vo: %.v | src/IEEE754/Int63Compat.v
 	@COQDEP@ -R src Flocq $< | @REMAKE@ -r $@
-	@COQC@ @COQEXTRAFLAGS@ -R src Flocq $<
+	@COQC@ @COQEXTRAFLAGS@ -q -R src Flocq $<
 
 examples/%.vo: examples/%.v
 	@COQDEP@ $(LOCAL) -R examples FlocqEx $< | @REMAKE@ -r $@
-	@COQC@ $(LOCAL) -R examples FlocqEx $<
+	@COQC@ $(LOCAL) -q -R examples FlocqEx $<
 
 $(EOBJS): LOCAL = -R src Flocq
 
