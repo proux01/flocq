@@ -35,6 +35,7 @@ FILES = \
 	IEEE754/PrimFloat.v \
 	Pff/Pff.v \
 	Pff/Pff2FlocqAux.v \
+	@NAT2Z_FILE@ \
 	Pff/Pff2Flocq.v
 
 OBJS = $(addprefix src/,$(addsuffix o,$(FILES)))
