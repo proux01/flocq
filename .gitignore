@@ -17,6 +17,7 @@
 /public/
 /src/Version.v
 /src/IEEE754/Int63Compat.v
+/src/Pff/Nat2Z_compat.v
 *.vo
 *.vos
 *.vok

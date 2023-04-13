@@ -25,6 +25,27 @@ Require Import Int63Compat.
 From Coq Require Import ZArith Reals Floats SpecFloat.
 Require Import Zaux BinarySingleNaN.
 
+(* Compatibility workaround, remove once requiring Coq >= 8.15 *)
+Definition ldexp f (_ : Z) : float := f.
+Definition frexp (f : float) := (f, Z0).
+Import FloatOps.
+Module Import Z.
+Notation ldexp := ldexp.
+Notation frexp := frexp.
+End Z.
+Import Floats.
+Import Zaux BinarySingleNaN.
+
+(* Compatibility workaround, remove once requiring Coq >= 8.15 *)
+Lemma Z_ldexp_spec f e :
+  Prim2SF (Z.ldexp f e) = SFldexp prec emax (Prim2SF f) e.
+Proof. try exact (Z_ldexp_spec f e); exact (ldexp_spec f e). Qed.
+
+(* Compatibility workaround, remove once requiring Coq >= 8.15 *)
+Lemma Z_frexp_spec f :
+  let (m, e) := Z.frexp f in (Prim2SF m, e) = SFfrexp prec emax (Prim2SF f).
+Proof. try exact (Z_frexp_spec f); exact (frexp_spec f). Qed.
+
 (** Conversions from/to Flocq binary_float *)
 
 Definition Prim2B (x : float) : binary_float prec emax :=
@@ -268,14 +289,14 @@ Qed.
 
 Theorem ldexp_equiv :
   forall x e,
-  Prim2B (ldexp x e) = Bldexp mode_NE (Prim2B x) e.
+  Prim2B (Z.ldexp x e) = Bldexp mode_NE (Prim2B x) e.
 Proof.
 intros x e.
 apply B2Prim_inj.
 rewrite B2Prim_Prim2B.
 apply Prim2SF_inj.
 rewrite Prim2SF_B2Prim.
-rewrite ldexp_spec.
+rewrite Z_ldexp_spec.
 rewrite <-!B2SF_Prim2B.
 case (Prim2B x) as [sx|sx| |sx mx ex Bx]; [now trivial.. | ].
 simpl.
@@ -302,12 +323,12 @@ Qed.
 
 Theorem frexp_equiv :
   forall x : float,
-  let (m, e) := frexp x in
+  let (m, e) := Z.frexp x in
   (Prim2B m, e) = Bfrexp (Prim2B x).
 Proof.
 intro x.
-generalize (frexp_spec x).
-destruct frexp as [f e].
+generalize (Z_frexp_spec x).
+destruct Z.frexp as [f e].
 rewrite <-(B2SF_Prim2B x).
 replace (SFfrexp _ _ _)
   with (let (f, e) := Bfrexp (Prim2B x) in
@@ -329,7 +350,7 @@ Theorem frshiftexp_equiv :
 Proof.
 intro x.
 generalize (frexp_equiv x).
-unfold frexp.
+unfold Z.frexp.
 now case frshiftexp.
 Qed.
 
@@ -361,7 +382,7 @@ intro x.
 unfold ulp, Bulp'.
 rewrite one_equiv, ldexp_equiv, Prim2B_B2Prim.
 generalize (frexp_equiv x).
-case frexp; intros f e.
+case Z.frexp; intros f e.
 destruct Bfrexp as [f' e'].
 now intros [= _ <-].
 Qed.
@@ -378,15 +399,15 @@ rewrite next_up_spec.
 rewrite <-B2SF_Prim2B.
 assert (Hsndfrexp : forall x : binary_float prec emax, snd (SFfrexp prec emax (B2SF x)) = snd (Bfrexp x)).
 { intro x'.
-  generalize (frexp_spec (B2Prim x')).
+  generalize (Z_frexp_spec (B2Prim x')).
   generalize (frexp_equiv (B2Prim x')).
-  case frexp; intros f' e'.
+  case Z.frexp; intros f' e'.
   rewrite Prim2B_B2Prim, Prim2SF_B2Prim.
   intros H H'; generalize (f_equal snd H'); generalize (f_equal snd H); simpl.
   now intros ->. }
 assert (Hldexp : forall x e, SFldexp prec emax (B2SF x) e = B2SF (Bldexp mode_NE x e)).
 { intros x' e'.
-  rewrite <-(Prim2B_B2Prim x'), B2SF_Prim2B, <-ldexp_spec.
+  rewrite <-(Prim2B_B2Prim x'), B2SF_Prim2B, <-Z_ldexp_spec.
   now rewrite <-B2SF_Prim2B, ldexp_equiv. }
 assert (Hulp : forall x, SFulp prec emax (B2SF x) = B2SF (Bulp' x)).
 { intro x'.
