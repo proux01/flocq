@@ -64,7 +64,7 @@ check: $(EOBJS)
 
 check-more: $(MOBJS)
 
-CONFIGURED_FILES = Remakefile src/Version.v src/IEEE754/Int63Compat.v
+CONFIGURED_FILES = Remakefile src/Version.v src/IEEE754/Int63Compat.v src/Pff/Nat2Z_compat.v
 
 $(CONFIGURED_FILES): %: %.in config.status
 	./config.status $@
@@ -73,7 +73,7 @@ configure config.status: configure.in
 	autoconf
 	./config.status --recheck
 
-%.vo: %.v | src/IEEE754/Int63Compat.v
+%.vo: %.v | src/IEEE754/Int63Compat.v src/Pff/Nat2Z_compat.v
 	@COQDEP@ -R src Flocq $< | @REMAKE@ -r $@
 	@COQC@ @COQEXTRAFLAGS@ -q -R src Flocq $<
 
