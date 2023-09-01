@@ -1,3 +1,8 @@
+Version 4.1.2
+-------------
+
+* ensured compatibility from Coq 8.12 to 8.18
+
 Version 4.1.1
 -------------
 
