@@ -1,3 +1,8 @@
+Version 4.1.3
+-------------
+
+* avoided breaking users of `IEEE754.PrimFloat`
+
 Version 4.1.2
 -------------
 
