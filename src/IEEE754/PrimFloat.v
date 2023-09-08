@@ -26,8 +26,10 @@ From Coq Require Import ZArith Reals Floats SpecFloat.
 Require Import Zaux BinarySingleNaN.
 
 (* Compatibility workaround, remove once requiring Coq >= 8.15 *)
+Module Import Compat.
 Definition ldexp f (_ : Z) : float := f.
 Definition frexp (f : float) := (f, Z0).
+End Compat.
 Import FloatOps.
 Module Import Z.
 Notation ldexp := ldexp.
