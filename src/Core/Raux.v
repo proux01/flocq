@@ -2276,7 +2276,7 @@ assert (Hi: forall n, (0 < INR n + 1)%R).
   intros N.
   rewrite <- S_INR.
   apply lt_0_INR.
-  apply lt_0_Sn.
+  apply Nat.lt_0_succ.
 intros P HP.
 set (E y := exists n, (P n /\ y = / (INR n + 1))%R \/ (~ P n /\ y = 0)%R).
 assert (HE: forall n, P n -> E (/ (INR n + 1))%R).
