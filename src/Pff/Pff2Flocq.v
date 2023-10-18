@@ -940,7 +940,6 @@ rewrite Hft3'', Hfx2y2''; apply Hft4'.
 rewrite make_bound_Emin; lia.
 case HH; intros K;[now left|right].
 destruct K as (l,Hl).
-apply even_equiv.
 exists (Z.abs_nat l).
 apply Nat2Z.inj.
 rewrite inj_mult.
