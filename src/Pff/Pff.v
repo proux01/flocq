@@ -17551,7 +17551,7 @@ apply Z.le_trans with  (Nat.double (Nat.div2 t)).
 unfold Nat.double; rewrite inj_plus; auto with zarith.
 rewrite <- Even_double; auto with zarith.
 apply Z.le_trans with (-1+(S ( Nat.double (Nat.div2 t))))%Z.
-rewrite inj_S; unfold Z.succ; auto with zarith.
+rewrite inj_S; unfold Z.succ; auto with zarith;
 unfold Nat.double; rewrite inj_plus; auto with zarith.
 rewrite <- Odd_double by easy. lia.
 Qed.
@@ -17566,9 +17566,9 @@ case (Nat.Even_or_Odd t); intros I.
 apply Z.le_trans with  ((Nat.double (Nat.div2 t)+1))%Z.
 2:unfold Nat.double; rewrite inj_plus; auto with zarith.
 rewrite <- Even_double; auto with zarith.
-apply Z.le_trans with ((S ( Nat.double (Nat.div2 t))))%Z; auto with zarith.
-2: rewrite inj_S; unfold Z.succ; auto with zarith.
-2: unfold Nat.double; rewrite inj_plus; auto with zarith.
+apply Z.le_trans with ((S ( Nat.double (Nat.div2 t))))%Z; auto with zarith;
+try solve [rewrite inj_S; unfold Z.succ; auto with zarith;
+  unfold Nat.double; rewrite inj_plus; auto with zarith].
 rewrite <- Odd_double; auto with zarith.
 Qed.
 
