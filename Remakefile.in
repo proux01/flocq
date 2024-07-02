@@ -33,6 +33,7 @@ FILES = \
 	IEEE754/Int63Compat.v \
 	@INT63_FILE@ \
 	IEEE754/PrimFloat.v \
+	Pff/Nat2Z_compat.v \
 	Pff/Pff.v \
 	Pff/Pff2FlocqAux.v \
 	@NAT2Z_FILE@ \
