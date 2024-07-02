@@ -70,6 +70,18 @@ Definition SF2B x :=
   | S754_nan => fun _ => B754_nan
   end.
 
+Definition SF2B' x :=
+  match x with
+  | S754_zero s => B754_zero s
+  | S754_infinity s => B754_infinity s
+  | S754_nan => B754_nan
+  | S754_finite s m e =>
+    match bounded m e as b return bounded m e = b -> _ with
+    | true => B754_finite s m e
+    | false => fun H => B754_nan
+    end eq_refl
+  end.
+
 Definition B2SF x :=
   match x with
   | B754_finite s m e _ => S754_finite s m e
@@ -232,6 +244,19 @@ revert Hx.
 rewrite H2, H3.
 intros Hx.
 apply f_equal, eqbool_irrelevance.
+Qed.
+
+Theorem SF2B'_B2SF :
+  forall x,
+  SF2B' (B2SF x) = x.
+Proof.
+intros [s|s| |s m e H] ; try easy.
+apply B2SF_inj.
+simpl.
+generalize (eq_refl (bounded m e)).
+pattern (bounded m e) at 2 3.
+apply eq_sym in H.
+now elim H.
 Qed.
 
 Definition is_finite_strict f :=
@@ -3761,6 +3786,7 @@ Arguments B754_nan {prec} {emax}.
 Arguments B754_finite {prec} {emax}.
 
 Arguments SF2B {prec} {emax}.
+Arguments SF2B' {prec} {emax}.
 Arguments B2SF {prec} {emax}.
 Arguments B2R {prec} {emax}.
 
