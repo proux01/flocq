@@ -1,3 +1,10 @@
+Version 4.2.0
+-------------
+
+* added `SF2B'` as a proof-free variant of `SF2B`
+* fixed installation of `Pff2Flocq`
+* ensured compatibility from Coq 8.12 to 8.20
+
 Version 4.1.4
 -------------
 
