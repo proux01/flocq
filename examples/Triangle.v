@@ -435,7 +435,7 @@ apply Rmult_le_compat_l.
 apply H.
 apply Rmult_le_reg_l with 2; auto with real.
 rewrite <- Rmult_assoc, Rinv_r.
-2:apply Rgt_not_eq, Rlt_gt; auto with real.
+2: now apply Rgt_not_eq, IZR_lt.
 rewrite 2!Rabs_pos_eq.
 lra.
 lra.
@@ -780,46 +780,22 @@ apply IZR_lt; auto with zarith.
 rewrite Rinv_r.
 rewrite Rmult_1_r.
 apply IZR_le; auto with zarith.
-apply Rgt_not_eq, Rlt_gt.
-apply IZR_lt; auto with zarith.
-assumption.
-rewrite <- Rmult_plus_distr_r.
-clear; interval.
-generalize prec_suff epsPos.
-cut (0 < eps).
-generalize eps; clear.
-intros r H0 H1 H2.
-field_simplify.
+now apply Rgt_not_eq, IZR_lt.
+easy.
+lra.
+generalize eps prec_suff epsPos ; clear.
+intros r H0 H1.
+apply Rcomplements.Rminus_le_0.
 apply Rmult_le_reg_r with 16.
-repeat apply Rmult_lt_0_compat; auto with real.
-unfold Rdiv; rewrite Rmult_assoc.
-replace (/64*16) with (/4) by field.
-field_simplify.
-unfold Rdiv; apply Rmult_le_compat_r.
+now apply IZR_lt.
+rewrite Rmult_0_l.
+replace (_ * 16) with (-(2704 * r ^ 4  + 6968 * r ^ 3 + 6257 * r ^ 2 + 2486 * r - 39) * (r*r)) by field.
+apply Rmult_le_pos.
 interval.
-apply Rplus_le_reg_l with (-368*r - 2431*r*r); ring_simplify.
-apply Rmult_le_reg_l with (/(r*r)).
-apply Rinv_0_lt_compat.
-now apply Rmult_lt_0_compat.
-apply Rle_trans with  (10816 * r ^ 4  + 27872 * r ^ 3 + 25028 * r ^ 2  +
-    9944 * r  -155).
-right; field.
-now apply Rgt_not_eq.
-apply Rle_trans with 1.
-2: right; field.
-unfold pow; rewrite Rmult_1_r.
-interval_intro (/100) upper.
-assert (J := conj H2 (Rle_trans _ _ _ H1 H)).
-clear -J.
-interval.
-now apply Rgt_not_eq.
-apply Rmult_lt_0_compat.
-apply Rinv_0_lt_compat.
-apply Rle_lt_0_plus_1; apply Rlt_le; exact Rlt_0_1.
-apply bpow_gt_0.
-apply Rabs_right.
-apply Rle_ge; apply Rmult_le_pos.
-left; apply Rinv_0_lt_compat, Rmult_lt_0_compat; apply Rle_lt_0_plus_1; apply Rlt_le; exact Rlt_0_1.
+now apply Rmult_le_pos.
+apply Rabs_pos_eq.
+apply Rmult_le_pos.
+lra.
 apply sqrt_pos.
 Qed.
 
@@ -848,64 +824,21 @@ now apply Rle_0_minus.
 apply Rplus_le_reg_l with a; ring_simplify.
 rewrite Rplus_comm; assumption.
 2: apply M_correct.
-apply Rle_trans with (15/2*/100+26*/100).
-apply Rplus_le_compat.
-apply Rmult_le_compat_l.
-unfold Rdiv; apply Rmult_le_pos.
-apply IZR_le; auto with zarith.
-auto with real.
-assumption.
-rewrite Rmult_assoc.
-apply Rmult_le_compat_l.
-apply IZR_le; auto with zarith.
-rewrite <- (Rmult_1_l (/100)).
-apply Rmult_le_compat.
-apply epsPos.
-apply epsPos.
-apply Rle_trans with (1:=prec_suff).
-apply Rmult_le_reg_l with 100%R.
-apply IZR_lt; auto with zarith.
-rewrite Rinv_r.
-rewrite Rmult_1_r.
-apply IZR_le; auto with zarith.
-apply Rgt_not_eq, Rlt_gt.
-apply IZR_lt; auto with zarith.
-assumption.
-interval.
-generalize prec_suff epsPos.
-cut (0 < eps).
-generalize eps; clear.
-intros r H0 H1 H2.
-field_simplify.
+assert (H := epsPos).
+interval with (i_bisect eps).
+generalize eps prec_suff epsPos ; clear.
+intros r H0 H1.
+apply Rcomplements.Rminus_le_0.
 apply Rmult_le_reg_r with 16.
-repeat apply Rmult_lt_0_compat; auto with real.
-unfold Rdiv; rewrite Rmult_assoc.
-replace (/64*16) with (/4) by field.
-field_simplify.
-unfold Rdiv; apply Rmult_le_compat_r.
+now apply IZR_lt.
+rewrite Rmult_0_l.
+replace (_ * 16) with (-(2704 * r ^ 3  + 4264 * r ^ 2 + 1993 * r - 35) * (r*r)) by field.
+apply Rmult_le_pos.
 interval.
-apply Rplus_le_reg_l with (-304*r - 2111*r*r); ring_simplify.
-apply Rmult_le_reg_l with (/(r*r)).
-apply Rinv_0_lt_compat.
-now apply Rmult_lt_0_compat.
-apply Rle_trans with (10816 * r ^ 3 + 17056 * r ^ 2 + 7972 * r -139).
-right; field.
-now apply Rgt_not_eq.
-apply Rle_trans with 1.
-2: right; field.
-unfold pow; rewrite Rmult_1_r.
-interval_intro (/100) upper.
-assert (J := conj H2 (Rle_trans _ _ _ H1 H)).
-clear -J.
-interval.
-now apply Rgt_not_eq.
-apply Rmult_lt_0_compat.
-apply Rinv_0_lt_compat.
-apply Rle_lt_0_plus_1; apply Rlt_le; exact Rlt_0_1.
-apply bpow_gt_0.
-apply Rabs_right.
-apply Rle_ge; apply Rmult_le_pos.
-left; apply Rinv_0_lt_compat, Rmult_lt_0_compat; apply Rle_lt_0_plus_1; apply Rlt_le; exact Rlt_0_1.
+now apply Rmult_le_pos.
+apply Rabs_pos_eq.
+apply Rmult_le_pos.
+lra.
 apply sqrt_pos.
 apply trans_eq with (round_flx (/ 4 * round_flx (sqrt M))).
 apply sym_eq, round_generic...
@@ -1547,7 +1480,7 @@ cut (emin + prec-1 <= Zceil (IZR (emin + prec - 1) / 2))%Z. lia.
 rewrite <- (Zceil_IZR (emin+prec-1)) at 1.
 apply Zceil_le.
 apply Rmult_le_reg_l with 2%R.
-intuition.
+now apply IZR_lt.
 apply Rplus_le_reg_l with (-IZR (emin+prec-1)).
 apply Rle_trans with (IZR (emin + prec - 1));[right; ring|idtac].
 apply Rle_trans with 0%R;[idtac|right;simpl;field].
@@ -1563,7 +1496,7 @@ rewrite mult_IZR.
 apply Rle_trans with ( 2 * ((IZR (emin + prec - 1) / 2))).
 right; field.
 apply Rmult_le_compat_l.
-intuition.
+now apply IZR_le.
 apply Zceil_ub.
 right; apply sqrt_lem_1.
 apply bpow_ge_0.
@@ -1652,10 +1585,10 @@ auto with real.
 unfold Rdiv; rewrite Rmult_comm.
 rewrite Rmult_assoc.
 apply Rmult_le_compat_l.
-left; apply Rinv_0_lt_compat; apply Rmult_lt_0_compat; auto with real.
+lra.
 apply Rmult_le_compat; try apply Rabs_pos; try apply H0.
 rewrite Rmult_minus_distr_l, Rmult_1_r.
-apply f_equal2;[idtac|reflexivity].
+apply (f_equal (fun v => v - _)).
 rewrite <- sqrt_mult.
 apply f_equal.
 now field.
@@ -1830,34 +1763,18 @@ apply err_0.
 rewrite Rabs_right.
 exact Y1.
 apply Rle_ge, Mpos_.
-(* Ugly... *)
-generalize prec_suff (epsPos beta prec).
-cut (0 < eps).
-generalize eps; clear.
-intros r H0 H1 H2.
-rewrite Rmax_right;[idtac|assumption].
-field_simplify.
-unfold Rdiv; apply Rmult_le_compat_r.
-auto with real.
-apply Rplus_le_reg_l with (-15*r - 51*r*r); ring_simplify.
-apply Rmult_le_reg_l with (/(r*r)).
-apply Rinv_0_lt_compat.
-now apply Rmult_lt_0_compat.
-apply Rle_trans with (2*r ^ 6 + 15 * r ^ 5 + 50 * r ^ 4 + 97 * r ^ 3 + 120 * r ^ 2 + 97 * r -1 ).
-right; field.
-now apply Rgt_not_eq.
-apply Rle_trans with 1.
-2: right; field.
-unfold pow; rewrite Rmult_1_r.
-interval_intro (/100) upper.
-assert (J := conj H2 (Rle_trans _ _ _ H1 H)).
-clear -J.
+(* *)
+generalize eps prec_suff (epsPos beta prec) ; clear.
+intros r H0 H1.
+rewrite Rmax_right by easy.
+apply Rcomplements.Rminus_le_0.
+apply Rmult_le_reg_r with 2.
+now apply IZR_lt.
+rewrite Rmult_0_l.
+replace (_ * 2) with ((-2 * r ^ 6 - 15 * r ^ 5 - 50 * r ^ 4 - 97 * r ^ 3 - 120 * r ^ 2 - 97 * r + 2) * (r*r)) by field.
+apply Rmult_le_pos.
 interval.
-now apply Rgt_not_eq.
-apply Rmult_lt_0_compat.
-apply Rinv_0_lt_compat.
-apply Rle_lt_0_plus_1; apply Rlt_le; exact Rlt_0_1.
-apply bpow_gt_0.
+now apply Rmult_le_pos.
 Qed.
 
 (* argh, would be simpler in radix 2  Delta = /4 * round_flx (sqrt M) *)
@@ -1877,17 +1794,18 @@ apply fourth_format_gen.
 apply le_IZR.
 apply Rle_trans with (2:=Zceil_ub _).
 apply Rmult_le_reg_r with 2%R.
-intuition.
+now apply IZR_lt.
 unfold Rdiv; rewrite Rmult_assoc.
 rewrite Rinv_l.
 rewrite Rmult_1_r.
 rewrite <- mult_IZR.
 apply IZR_le.
 lia.
-apply Rgt_not_eq; intuition.
+apply Rgt_not_eq.
+now apply IZR_lt.
 replace (round_flt (/ 4)) with (/4).
 apply Rmult_le_compat_l.
-left; apply Rinv_0_lt_compat, Rmult_lt_0_compat; intuition.
+lra.
 exact Y1.
 apply sym_eq, round_generic...
 apply fourth_format.
@@ -1929,7 +1847,7 @@ apply bpow_le.
 rewrite <- (Zceil_IZR (emin+prec-1)) at 1.
 apply Zceil_le.
 apply Rmult_le_reg_l with 2%R.
-intuition.
+now apply IZR_lt.
 apply Rplus_le_reg_l with (-IZR (emin+prec-1)).
 apply Rle_trans with (IZR (emin + prec - 1));[right; ring|idtac].
 apply Rle_trans with 0%R;[idtac|right;simpl;field].
@@ -1938,7 +1856,7 @@ lia.
 rewrite Rabs_right.
 apply Rle_lt_trans with (2:=Y).
 apply Rmult_le_reg_l with 4.
-apply Rmult_lt_0_compat; intuition.
+now apply IZR_lt.
 rewrite <- Rmult_assoc, Rinv_r.
 rewrite Rmult_1_l.
 apply Rle_trans with (bpow (2+(emin + prec - 1))).
@@ -1956,17 +1874,15 @@ apply bpow_le.
 apply le_IZR.
 apply Rle_trans with (2:=Zceil_ub _).
 apply Rmult_le_reg_r with 2%R.
-intuition.
+now apply IZR_lt.
 unfold Rdiv; rewrite Rmult_assoc.
 rewrite Rinv_l.
 rewrite Rmult_1_r.
 rewrite <- mult_IZR.
 apply IZR_le.
 lia.
-apply Rgt_not_eq.
-intuition.
-apply Rgt_not_eq.
-apply Rmult_lt_0_compat; intuition.
+now apply Rgt_not_eq, IZR_lt.
+now apply Rgt_not_eq, IZR_lt.
 apply Rle_ge; apply FLT_pos_is_pos.
 apply Rmult_le_pos.
 apply FLT_pos_is_pos.
@@ -1974,41 +1890,19 @@ left; apply Rinv_0_lt_compat, Rmult_lt_0_compat; apply Rle_lt_0_plus_1; apply Rl
 apply FLT_pos_is_pos.
 apply sqrt_pos.
 (* *)
-generalize prec_suff (epsPos beta prec).
-cut (0 < eps).
-generalize eps; clear.
-intros r H0 H1 H2.
-field_simplify.
+generalize eps prec_suff (epsPos beta prec) ; clear.
+intros r H0 H1.
+apply Rcomplements.Rminus_le_0.
 apply Rmult_le_reg_r with 16.
-repeat apply Rmult_lt_0_compat; auto with real.
-unfold Rdiv; rewrite Rmult_assoc.
-replace (/64*16) with (/4) by field.
-field_simplify.
-unfold Rdiv; apply Rmult_le_compat_r.
+now apply IZR_lt.
+rewrite Rmult_0_l.
+replace (_ * 16) with ((-2704 * r ^ 4 -6968 * r ^ 3 - 6257 * r ^ 2 - 2486 * r + 39) * (r*r)) by field.
+apply Rmult_le_pos.
 interval.
-apply Rplus_le_reg_l with (-368*r - 2431*r*r); ring_simplify.
-apply Rmult_le_reg_l with (/(r*r)).
-apply Rinv_0_lt_compat.
-now apply Rmult_lt_0_compat.
-apply Rle_trans with  (10816 * r ^ 4  + 27872 * r ^ 3 + 25028 * r ^ 2  +
-    9944 * r  -155).
-right; field.
-now apply Rgt_not_eq.
-apply Rle_trans with 1.
-2: right; field.
-unfold pow; rewrite Rmult_1_r.
-interval_intro (/100) upper.
-assert (J := conj H2 (Rle_trans _ _ _ H1 H)).
-clear -J.
-interval.
-now apply Rgt_not_eq.
-apply Rmult_lt_0_compat.
-apply Rinv_0_lt_compat.
-apply Rle_lt_0_plus_1; apply Rlt_le; exact Rlt_0_1.
-apply bpow_gt_0.
-apply Rabs_right.
-apply Rle_ge; apply Rmult_le_pos.
-left; apply Rinv_0_lt_compat, Rmult_lt_0_compat; apply Rle_lt_0_plus_1; apply Rlt_le; exact Rlt_0_1.
+now apply Rmult_le_pos.
+apply Rabs_pos_eq.
+apply Rmult_le_pos.
+lra.
 apply sqrt_pos.
 Qed.
 
@@ -2031,19 +1925,19 @@ cut (emin+prec+1 <= Zceil (IZR (emin + prec - 1) / 2))%Z. lia.
 apply le_IZR.
 apply Rle_trans with (2:=Zceil_ub _).
 apply Rmult_le_reg_r with 2%R.
-intuition.
+now apply IZR_lt.
 unfold Rdiv; rewrite Rmult_assoc.
 rewrite Rinv_l.
 rewrite Rmult_1_r.
 rewrite <- mult_IZR.
 apply IZR_le.
 lia.
-apply Rgt_not_eq; intuition.
+now apply Rgt_not_eq, IZR_lt.
 replace (round_flt (/ 4)) with (/4).
 unfold Zminus; rewrite Rmult_comm, bpow_plus.
 replace (bpow (-(2))) with (/4).
 apply Rmult_le_compat_r.
-left; apply Rinv_0_lt_compat, Rmult_lt_0_compat; intuition.
+lra.
 exact Y1.
 simpl; apply f_equal; unfold Zpower_pos; simpl.
 rewrite Hradix; simpl; ring.
@@ -2082,47 +1976,26 @@ apply bpow_le.
 rewrite <- (Zceil_IZR (emin+prec-1)) at 1.
 apply Zceil_le.
 apply Rmult_le_reg_l with 2%R.
-intuition.
+now apply IZR_lt.
 apply Rplus_le_reg_l with (-IZR (emin+prec-1)).
 apply Rle_trans with (IZR (emin + prec - 1));[right; ring|idtac].
 apply Rle_trans with 0%R;[idtac|right;simpl;field].
 apply IZR_le.
 lia.
 (* *)
-generalize prec_suff (epsPos beta prec).
-cut (0 < eps).
-generalize eps; clear.
-intros r H0 H1 H2.
-field_simplify.
+generalize eps prec_suff (epsPos beta prec) ; clear.
+intros r H0 H1.
+apply Rcomplements.Rminus_le_0.
 apply Rmult_le_reg_r with 16.
-repeat apply Rmult_lt_0_compat; auto with real.
-unfold Rdiv; rewrite Rmult_assoc.
-replace (/64*16) with (/4) by field.
-field_simplify.
-unfold Rdiv; apply Rmult_le_compat_r.
+now apply IZR_lt.
+rewrite Rmult_0_l.
+replace (_ * 16) with ((-2704 * r ^ 3 - 4264 * r ^ 2 - 1993 * r + 35) * (r*r)) by field.
+apply Rmult_le_pos.
 interval.
-apply Rplus_le_reg_l with (-304*r - 2111*r*r); ring_simplify.
-apply Rmult_le_reg_l with (/(r*r)).
-apply Rinv_0_lt_compat.
-now apply Rmult_lt_0_compat.
-apply Rle_trans with (10816 * r ^ 3 + 17056 * r ^ 2 + 7972 * r -139).
-right; field.
-now apply Rgt_not_eq.
-apply Rle_trans with 1.
-2: right; field.
-unfold pow; rewrite Rmult_1_r.
-interval_intro (/100) upper.
-assert (J := conj H2 (Rle_trans _ _ _ H1 H)).
-clear -J.
-interval.
-now apply Rgt_not_eq.
-apply Rmult_lt_0_compat.
-apply Rinv_0_lt_compat.
-apply Rle_lt_0_plus_1; apply Rlt_le; exact Rlt_0_1.
-apply bpow_gt_0.
-apply Rabs_right.
-apply Rle_ge; apply Rmult_le_pos.
-left; apply Rinv_0_lt_compat, Rmult_lt_0_compat; apply Rle_lt_0_plus_1; apply Rlt_le; exact Rlt_0_1.
+now apply Rmult_le_pos.
+apply Rabs_pos_eq.
+apply Rmult_le_pos.
+lra.
 apply sqrt_pos.
 apply trans_eq with (round_flt (/ 4 * round_flt (sqrt M))).
 apply sym_eq, round_generic...
@@ -2148,14 +2021,14 @@ apply bpow_le.
 apply le_IZR.
 apply Rle_trans with (2:=Zceil_ub _).
 apply Rmult_le_reg_r with 2%R.
-intuition.
+now apply IZR_lt.
 unfold Rdiv; rewrite Rmult_assoc.
 rewrite Rinv_l.
 rewrite Rmult_1_r.
 rewrite <- mult_IZR.
 apply IZR_le.
 lia.
-apply Rgt_not_eq; intuition.
+now apply Rgt_not_eq, IZR_lt.
 apply Rlt_le_trans with (1:=H).
 rewrite Hf1.
 apply Rle_trans with (1:=RRle_abs _).
