@@ -22,6 +22,6 @@ ENV OPAM_PACKAGES="conf-autoconf conf-g++"
 RUN opam init -y --no-setup -j4 --bare --disable-sandboxing && \
     opam switch create minimal ocaml-system && \
     opam switch create latest  ocaml-system && \
-    opam install -y --switch=minimal $OPAM_PACKAGES coq.8.12.2 && \
+    opam install -y --switch=minimal $OPAM_PACKAGES coq.8.14.1 && \
     opam install -y --switch=latest  $OPAM_PACKAGES coq.8.17.1 && \
     opam clean -a -c -r -s --logs

@@ -21,7 +21,6 @@ Require Import Psatz.
 
 Require Import Core Plus_error Mult_error Operations Sterbenz.
 Require Import Pff Pff2FlocqAux.
-Require Import Nat2Z_compat.  (* remove when requiring Coq >= 8.14 *)
 
 Open Scope R_scope.
 

@@ -30,13 +30,9 @@ FILES = \
 	IEEE754/BinarySingleNaN.v \
 	IEEE754/Binary.v \
 	IEEE754/Bits.v \
-	IEEE754/Int63Compat.v \
-	@INT63_FILE@ \
 	IEEE754/PrimFloat.v \
-	Pff/Nat2Z_compat.v \
 	Pff/Pff.v \
 	Pff/Pff2FlocqAux.v \
-	@NAT2Z_FILE@ \
 	Pff/Pff2Flocq.v
 
 OBJS = $(addprefix src/,$(addsuffix o,$(FILES)))
@@ -65,7 +61,7 @@ check: $(EOBJS)
 
 check-more: $(MOBJS)
 
-CONFIGURED_FILES = Remakefile src/Version.v src/IEEE754/Int63Compat.v src/Pff/Nat2Z_compat.v
+CONFIGURED_FILES = Remakefile src/Version.v
 
 $(CONFIGURED_FILES): %: %.in config.status
 	./config.status $@
@@ -74,7 +70,7 @@ configure config.status: configure.in
 	autoconf
 	./config.status --recheck
 
-%.vo: %.v | src/IEEE754/Int63Compat.v src/Pff/Nat2Z_compat.v
+%.vo: %.v
 	@COQDEP@ -R src Flocq $< | @REMAKE@ -r $@
 	@COQC@ @COQEXTRAFLAGS@ -q -R src Flocq $<
 
