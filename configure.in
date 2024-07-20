@@ -26,8 +26,8 @@ AC_MSG_RESULT([$COQC])
 
 AC_MSG_CHECKING(Coq version)
 coq_version=`$COQC -v | grep version | sed -e 's/^.*version \([[0-9.]]*\).*$/\1/'`
-AX_VERSION_GE([$coq_version], 8.14, [],
-  [AC_MSG_ERROR([must be at least 8.14 (you have version $coq_version).])])
+AX_VERSION_GE([$coq_version], 8.15, [],
+  [AC_MSG_ERROR([must be at least 8.15 (you have version $coq_version).])])
 AC_MSG_RESULT($coq_version)
 
 AC_ARG_VAR(COQDEP, [Coq dependency analyzer command [coqdep]])

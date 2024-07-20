@@ -25,29 +25,6 @@ From Coq Require Import Uint63.
 From Coq Require Import ZArith Reals Floats SpecFloat.
 Require Import Zaux BinarySingleNaN.
 
-(* Compatibility workaround, remove once requiring Coq >= 8.15 *)
-Module Import Compat.
-Definition ldexp f (_ : Z) : float := f.
-Definition frexp (f : float) := (f, Z0).
-End Compat.
-Import FloatOps.
-Module Import Z.
-Notation ldexp := ldexp.
-Notation frexp := frexp.
-End Z.
-Import Floats.
-Import Zaux BinarySingleNaN.
-
-(* Compatibility workaround, remove once requiring Coq >= 8.15 *)
-Lemma Z_ldexp_spec f e :
-  Prim2SF (Z.ldexp f e) = SFldexp prec emax (Prim2SF f) e.
-Proof. try exact (Z_ldexp_spec f e); exact (ldexp_spec f e). Qed.
-
-(* Compatibility workaround, remove once requiring Coq >= 8.15 *)
-Lemma Z_frexp_spec f :
-  let (m, e) := Z.frexp f in (Prim2SF m, e) = SFfrexp prec emax (Prim2SF f).
-Proof. try exact (Z_frexp_spec f); exact (frexp_spec f). Qed.
-
 (** Conversions from/to Flocq binary_float *)
 
 Definition Prim2B (x : float) : binary_float prec emax :=

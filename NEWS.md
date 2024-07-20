@@ -1,4 +1,4 @@
-* made Coq 8.14 the minimal version and removed the `Int63Compat` and `Nat2Z_compat` layers
+* made Coq 8.15 the minimal version and removed the `Int63Compat` and `Nat2Z_compat` layers
 
 Version 4.2.0
 -------------
