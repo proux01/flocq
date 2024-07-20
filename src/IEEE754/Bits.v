@@ -264,6 +264,7 @@ assert (Hf: (emin <= ex /\ Zdigits radix2 (Zpos mx) <= prec)%Z).
 destruct (andb_prop _ _ Hx) as (Hx', _).
 unfold canonical_mantissa in Hx'.
 rewrite Zpos_digits2_pos in Hx'.
+rewrite ?Z.eqb_compare in Hx'.
 generalize (Zeq_bool_eq _ _ Hx').
 unfold fexp, FLT_exp, emin.
 clear ; lia.
@@ -320,7 +321,8 @@ intros [sx|sx|sx pl pl_range|sx mx ex H].
 - unfold bounded in H.
   apply Bool.andb_true_iff in H ; destruct H as [A B].
   apply Z.leb_le in B.
-  unfold canonical_mantissa, fexp, FLT_exp in A. apply Zeq_bool_eq in A.
+  unfold canonical_mantissa, fexp, FLT_exp in A.
+  rewrite ?Z.eqb_compare in A; apply Zeq_bool_eq in A.
   case Zle_bool_spec ; intros H.
   + apply join_bits_range.
     * split.
@@ -533,6 +535,7 @@ apply refl_equal.
 discriminate.
 clear -Hew ; lia.
 destruct (andb_prop _ _ Bx) as (H1, _).
+rewrite ?canonical_mantissa_compat in H1.
 generalize (Zeq_bool_eq _ _ H1).
 rewrite Zpos_digits2_pos.
 unfold FLT_exp, emin.
@@ -545,6 +548,7 @@ rewrite Zeq_bool_true. 2: apply refl_equal.
 simpl.
 apply f_equal.
 destruct (andb_prop _ _ Bx) as (H1, _).
+rewrite ?canonical_mantissa_compat in H1.
 generalize (Zeq_bool_eq _ _ H1).
 rewrite Zpos_digits2_pos.
 unfold FLT_exp, emin, prec.

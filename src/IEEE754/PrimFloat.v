@@ -192,7 +192,7 @@ rewrite add_spec.
 rewrite <-!B2SF_Prim2B.
 case (Prim2B x) as [sx|sx| |sx mx ex Bx];
   case (Prim2B y) as [sy|sy| |sy my ey By];
-  [now (trivial || simpl; case Bool.eqb).. | ].
+  [now (trivial || simpl; now case sx, sy).. | ].
 apply binary_normalize_equiv.
 Qed.
 
@@ -209,7 +209,7 @@ rewrite sub_spec.
 rewrite <-!B2SF_Prim2B.
 case (Prim2B x) as [sx|sx| |sx mx ex Bx];
   case (Prim2B y) as [sy|sy| |sy my ey By];
-  [now (trivial || simpl; case Bool.eqb).. | ].
+  [now (trivial || simpl; now case sx, sy).. | ].
 simpl.
 unfold Zminus.
 rewrite <- cond_Zopp_negb.
@@ -317,8 +317,9 @@ replace (SFfrexp _ _ _)
 - case (Prim2B x) as [s|s| |s m e' Hme] ; try easy.
   simpl.
   rewrite B2SF_SF2B.
-  unfold Ffrexp_core_binary.
+  unfold Ffrexp_core_binary, prec.
   change (digits2_pos m) with (Digits.digits2_pos m).
+  rewrite <-?Pos2Z.inj_leb.
   now destruct Pos.leb.
 Qed.
 
@@ -403,6 +404,7 @@ assert (Hpred_pos : forall x, (0 < B2R x)%R -> SFpred_pos prec emax (B2SF x) = B
   unfold B2SF at 1.
   set (y := Bldexp _ _ _).
   set (z := Bulp' _).
+  fold (shift_pos (Z.to_pos prec) 1).
   case Pos.eqb.
   - rewrite <-(Prim2B_B2Prim (B754_finite _ _ _ _)).
     rewrite <-(Prim2B_B2Prim y).
@@ -510,13 +512,13 @@ Qed.
 
 Theorem of_int63_equiv :
   forall i,
-  Prim2B (of_int63 i)
+  Prim2B (of_uint63 i)
   = binary_normalize prec emax Hprec Hmax mode_NE (to_Z i) 0 false.
 Proof.
 intro i.
 apply B2SF_inj.
 rewrite B2SF_Prim2B.
-rewrite of_int63_spec.
+rewrite of_uint63_spec.
 apply binary_normalize_equiv.
 Qed.
 

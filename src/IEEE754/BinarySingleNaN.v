@@ -158,12 +158,21 @@ Proof.
 now intros T fz fi fn ff [sx|sx| |sx mx ex] Hx.
 Qed.
 
+Lemma canonical_mantissa_compat mx ex :
+  canonical_mantissa mx ex
+  = match (fexp (Z.pos (digits2_pos mx) + ex) ?= ex)%Z with
+    | Eq => true
+    | _ => false
+    end.
+Proof. now unfold canonical_mantissa; rewrite ?Z.eqb_compare. Qed.
+
 Theorem canonical_canonical_mantissa :
   forall (sx : bool) mx ex,
   canonical_mantissa mx ex = true ->
   canonical radix2 fexp (Float radix2 (cond_Zopp sx (Zpos mx)) ex).
 Proof.
 intros sx mx ex H.
+rewrite ?canonical_mantissa_compat in H.
 assert (Hx := Zeq_bool_eq _ _ H). clear H.
 apply sym_eq.
 simpl.
@@ -699,6 +708,7 @@ apply Rle_trans with ((bpow radix2 (Zdigits radix2 (Z.pos mx)) - 1) * bpow radix
   { rewrite Rmult_minus_distr_r, Rmult_1_l, <- bpow_plus.
     apply Rplus_le_compat_r.
     apply bpow_le.
+    rewrite ?canonical_mantissa_compat in H1.
     apply Zeq_bool_eq in H1.
     rewrite Zpos_digits2_pos in H1.
     unfold fexp, FLT_exp in H1.
@@ -724,6 +734,7 @@ Theorem bounded_lt_emax :
 Proof.
 intros mx ex Hx.
 destruct (andb_prop _ _ Hx) as (H1,H2).
+rewrite ?canonical_mantissa_compat in H1.
 generalize (Zeq_bool_eq _ _ H1). clear H1. intro H1.
 generalize (Zle_bool_imp_le _ _ H2). clear H2. intro H2.
 generalize (mag_F2R_Zdigits radix2 (Zpos mx) ex).
@@ -772,6 +783,7 @@ Theorem bounded_ge_emin :
 Proof.
 intros mx ex Hx.
 destruct (andb_prop _ _ Hx) as [H1 _].
+rewrite ?canonical_mantissa_compat in H1.
 apply Zeq_bool_eq in H1.
 generalize (mag_F2R_Zdigits radix2 (Zpos mx) ex).
 destruct (mag radix2 (F2R (Float radix2 (Zpos mx) ex))) as [e' Ex].
@@ -836,6 +848,7 @@ Proof.
 intros mx ex Cx Bx.
 apply andb_true_intro.
 split.
+rewrite ?canonical_mantissa_compat.
 unfold canonical_mantissa.
 unfold canonical, Fexp in Cx.
 rewrite Cx at 2.
@@ -1190,6 +1203,7 @@ easy.
 unfold valid_binary, bounded.
 rewrite Zle_bool_refl.
 rewrite Bool.andb_true_r.
+rewrite ?canonical_mantissa_compat.
 apply Zeq_bool_true.
 rewrite Zpos_digits2_pos.
 replace (Zdigits radix2 _) with prec.
@@ -1351,6 +1365,7 @@ elim Rgt_not_eq with (2 := H3).
 rewrite F2R_0.
 now apply F2R_gt_0.
 destruct (binary_fit_aux_correct m (Rlt_bool x 0) m2 e2) as [H5 H6].
+  rewrite ?canonical_mantissa_compat.
   apply Zeq_bool_true.
   rewrite Zpos_digits2_pos.
   rewrite <- mag_F2R_Zdigits by easy.
@@ -1475,6 +1490,7 @@ elim Rgt_not_eq with (2 := H3).
 rewrite F2R_0.
 now apply F2R_gt_0.
 destruct (binary_fit_aux_correct m (Rlt_bool x 0) m2 e2) as [H5 H6].
+  rewrite ?canonical_mantissa_compat.
   apply Zeq_bool_true.
   rewrite Zpos_digits2_pos.
   rewrite <- mag_F2R_Zdigits by easy.
@@ -1539,6 +1555,7 @@ assert (forall m e, bounded m e = true -> fexp (Zdigits radix2 (Zpos m) + e) = e
 clear. intros m e Hb.
 destruct (andb_prop _ _ Hb) as (H,_).
 apply Zeq_bool_eq.
+rewrite ?canonical_mantissa_compat in H.
 now rewrite <- Zpos_digits2_pos.
 generalize (H _ _ Hx) (H _ _ Hy).
 clear x y sx sy Hx Hy H.
@@ -1620,6 +1637,7 @@ destruct (ex' - ex)%Z as [|d|d] eqn:Hd ; simpl.
 - now replace ex with ex' by lia.
 - exfalso ; lia.
 - refine (conj _ eq_refl).
+  fold (shift_pos d mx).
   rewrite shift_pos_correct, Zmult_comm.
   change (Zpower_pos 2 d) with (Zpower radix2 (Z.opp (Z.neg d))).
   rewrite <- Hd.
@@ -2275,10 +2293,11 @@ apply binary_round_aux_correct'.
   + rewrite <- 2!F2R_Zabs, 2!abs_cond_Zopp; simpl.
     replace (SpecFloat.new_location _ _) with (Bracket.new_location (Z.pos my) r loc_Exact);
       [exact Bz|].
-    case my as [p|p|]; [reflexivity| |reflexivity].
-    unfold Bracket.new_location, SpecFloat.new_location; simpl.
-    unfold Bracket.new_location_even, SpecFloat.new_location_even; simpl.
-    now case Zeq_bool; [|case r as [|rp|rp]; case Z.compare].
+    case my as [p|p|]; unfold new_location, SpecFloat.new_location; simpl.
+    * now unfold SpecFloat.new_location_odd; rewrite ?Z.eqb_compare.
+    * unfold SpecFloat.new_location_even; rewrite ?Z.eqb_compare.
+      now unfold new_location_even; case (2 * r ?= Z.pos p~0)%Z.
+    * now unfold SpecFloat.new_location_odd; rewrite ?Z.eqb_compare.
   + now apply F2R_neq_0 ; case sy.
 - rewrite <- cexp_abs, Rabs_mult, Rabs_Rinv.
   rewrite 2!F2R_cond_Zopp, 2!abs_cond_Ropp, <- Rabs_Rinv.
@@ -2367,7 +2386,8 @@ assert (mx' = Zpos mx * Zpower radix2 (ex - 2 * e'))%Z as <-.
   easy. }
 clearbody mx'.
 destruct Z.sqrtrem as [mz r].
-set (lz := if Zeq_bool r 0 then _ else _).
+rewrite ?Z.eqb_compare; unfold Zeq_bool.
+set (lz := if match (r ?= 0)%Z with Eq => true | _ => _ end then _ else _).
 clearbody lz.
 intros Bz.
 refine (_ (binary_round_aux_correct' m (sqrt (F2R (Float radix2 (Zpos mx) ex))) mz e' lz _ _ _)) ; cycle 1.
@@ -2530,7 +2550,8 @@ Proof.
   { unfold mrs'. case Zlt_bool_spec; [ | easy]. intros Hex1. symmetry.
     apply shr_limit; simpl; [now left |]. apply Z.lt_le_trans with (radix2 ^ prec)%Z.
     - unfold bounded, canonical_mantissa, fexp in Hmxex. apply andb_prop in Hmxex.
-      destruct Hmxex as [Hmxex _]. apply Zeq_bool_eq in Hmxex.
+      destruct Hmxex as [Hmxex _].
+      rewrite ?Z.eqb_compare in Hmxex. apply Zeq_bool_eq in Hmxex.
       rewrite Zpos_digits2_pos in Hmxex. apply Z.eq_le_incl in Hmxex.
       apply Z.max_lub_l in Hmxex.
       assert (Hmx : (Zdigits radix2 (Z.pos mx) <= prec)%Z) by lia.
@@ -2577,7 +2598,9 @@ Proof.
           * apply Z.opp_pos_neg in Hex0. apply Z.div_le_compat_l; [lia |].
             split; [lia |]. apply Z.pow_le_mono_r; lia.
         + rewrite Zdigits_div_Zpower; [| lia |].
-          * rewrite Z.sub_add. apply Zeq_bool_eq in Hmxex. unfold fexp in *.
+          * rewrite Z.sub_add.
+            rewrite ?Z.eqb_compare in Hmxex. apply Zeq_bool_eq in Hmxex.
+            unfold fexp in *.
             rewrite Z.max_lub_iff. split; [| lia]. apply (Zplus_le_reg_l _ _ ex).
             rewrite Zplus_0_r. rewrite Z.add_sub_assoc. rewrite Z.add_comm.
             rewrite <-Hmxex at 2. apply Z.le_max_l.
@@ -2586,7 +2609,8 @@ Proof.
     refine (_ (shl_align_correct' p 0 (fexp (Z.pos (digits2_pos p) + 0)) _)).
     + rewrite H1. intros [H2 H3]. rewrite <-H3 in H2.
       apply andb_true_intro; split.
-      * apply Zeq_bool_true. rewrite H3 at 2. rewrite !Zpos_digits2_pos.
+      * rewrite ?Z.eqb_compare.
+        apply Zeq_bool_true. rewrite H3 at 2. rewrite !Zpos_digits2_pos.
         rewrite <-!mag_F2R_Zdigits; [| lia | lia].
         now apply (f_equal (fun f => fexp (mag radix2 f))).
       * apply Zle_bool_true. rewrite H3. transitivity 0%Z; [assumption|].
@@ -2778,7 +2802,7 @@ Lemma Bmax_float_proof :
   = true.
 Proof.
 unfold valid_binary, bounded; apply andb_true_intro; split.
-- unfold canonical_mantissa; apply Zeq_bool_true.
+- rewrite ?canonical_mantissa_compat; unfold canonical_mantissa; apply Zeq_bool_true.
   set (p := Z.pos (digits2_pos _)).
   assert (H : p = prec).
   { unfold p; rewrite Zpos_digits2_pos, Pos2Z.inj_sub.
@@ -2841,7 +2865,7 @@ cut (Z.pos (digits2_pos m) = prec)%Z.
 { now intro H; split; [ |exact H]; ring_simplify; rewrite H. }
 revert B; unfold bounded, canonical_mantissa.
 intro H; generalize (andb_prop _ _ H); clear H; intros [H _]; revert H.
-intro H; generalize (Zeq_bool_eq _ _ H); clear H.
+intro H; rewrite ?Z.eqb_compare in H; generalize (Zeq_bool_eq _ _ H); clear H.
 unfold fexp, emin.
 unfold Prec_gt_0 in prec_gt_0_; unfold Prec_lt_emax in prec_lt_emax_.
 lia.
@@ -2939,7 +2963,10 @@ set (z := fst _).
 set (e := snd _); simpl.
 assert (Dmx_le_prec : (Z.pos (digits2_pos mx) <= prec)%Z).
 { revert Bx; unfold bounded; rewrite Bool.andb_true_iff.
-  unfold canonical_mantissa; rewrite <-Zeq_is_eq_bool; unfold fexp, FLT_exp.
+  rewrite ?canonical_mantissa_compat.
+  unfold canonical_mantissa.
+  fold (Zeq_bool (fexp (Z.pos (digits2_pos mx) + ex)) ex).
+  rewrite <-Zeq_is_eq_bool; unfold fexp, FLT_exp.
   case (Z.max_spec (Z.pos (digits2_pos mx) + ex - prec) emin); lia. }
 assert (Dmx_le_prec' : (digits2_pos mx <= Z.to_pos prec)%positive).
 { change (_ <= _)%positive
@@ -2961,6 +2988,7 @@ case (Pos.leb_spec _ _); simpl; intro Dmx.
   + apply andb_true_intro.
     split ; cycle 1.
     { apply Zle_bool_true. clear -Hp ; lia. }
+    rewrite ?canonical_mantissa_compat.
     apply Zeq_bool_true; unfold fexp, FLT_exp.
     rewrite Dmx', Z2Pos.id by apply prec_gt_0_.
     rewrite Z.max_l.
@@ -2994,6 +3022,7 @@ case (Pos.leb_spec _ _); simpl; intro Dmx.
   + unfold bounded; apply andb_true_intro.
     split ; cycle 1.
     { apply Zle_bool_true. clear -Hp ; lia. }
+    rewrite ?canonical_mantissa_compat.
     apply Zeq_bool_true; unfold fexp, FLT_exp.
     rewrite Zpos_digits2_pos, shift_pos_correct, Z.pow_pos_fold.
     rewrite Z2Pos.id; [|lia].
@@ -3080,6 +3109,8 @@ Lemma Bulp_correct_aux :
   bounded 1 emin = true.
 Proof.
 unfold bounded, canonical_mantissa.
+rewrite ?Z.eqb_compare.
+fold (Zeq_bool (fexp (Z.pos (digits2_pos 1) + emin)) emin).
 rewrite Zeq_bool_true.
 apply Zle_bool_true.
 apply Z.max_l_iff, fexp_emax.
