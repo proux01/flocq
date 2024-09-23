@@ -12,7 +12,7 @@ Require Export PeanoNat.
 Require Import Psatz.
 
 (* Compatibility workaround, remove once requiring Coq >= 8.16 *)
-Module Import Compat.
+Module Import Compat816.
 
 Lemma Even_0 : Nat.Even 0.
 Proof. exists 0; reflexivity. Qed.
@@ -65,7 +65,21 @@ Proof proj1 (proj1 (Even_Odd_double n)).
 Definition Odd_double n : Nat.Odd n -> n = S (Nat.double (Nat.div2 n)).
 Proof proj1 (proj2 (Even_Odd_double n)).
 
-End Compat.
+Definition Rinv_mult_distr := Rinv_mult_distr.
+Definition Rabs_Rinv := Rabs_Rinv.
+Definition Rinv_pow := Rinv_pow.
+Definition Rinv_involutive := Rinv_involutive.
+Definition Rlt_Rminus := Rlt_Rminus.
+Definition powerRZ_inv := powerRZ_inv.
+Definition powerRZ_neg := powerRZ_neg.
+
+End Compat816.
+
+Module Import Compat819.
+
+Definition IZR_neq := IZR_neq.
+
+End Compat819.
 
 (*** was file sTactic.v  ***)
 
