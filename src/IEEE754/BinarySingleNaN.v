@@ -924,6 +924,17 @@ destruct mrs as (m, r, s).
 now destruct m as [|[m|m|]|m] ; try (now elim Hm) ; destruct r as [|] ; destruct s as [|].
 Qed.
 
+Lemma shr_nat :
+  forall mrs e n, (0 <= n)%Z ->
+  shr mrs e n = (iter_nat shr_1 (Z.to_nat n) mrs, (e + n)%Z).
+Proof.
+intros mrs e n Hn.
+destruct n as [|n|n] ; simpl.
+now rewrite Zplus_0_r.
+now rewrite iter_pos_nat.
+easy.
+Qed.
+
 Theorem inbetween_shr :
   forall x m e l n,
   (0 <= m)%Z ->
@@ -961,40 +972,44 @@ Qed.
 
 Lemma le_shr1_le :
   forall mrs, (0 <= shr_m mrs)%Z ->
-  (0 <= 2 * shr_m (shr_1 mrs) <= shr_m mrs)%Z /\
-  (shr_m mrs < 2 * (shr_m (shr_1 mrs) + 1))%Z.
+  (0 <= shr_m (shr_1 mrs))%Z /\
+  (2 * shr_m (shr_1 mrs) <= shr_m mrs < 2 * (shr_m (shr_1 mrs) + 1))%Z.
 Proof.
-  destruct mrs as [m r s]. simpl.
-  destruct m as [| p | p]; [simpl; lia | intros _ | intros; easy].
-  destruct p; simpl; [| | lia].
-  - rewrite Pos2Z.inj_xO, Pos2Z.inj_xI. lia.
-  - rewrite Pos2Z.inj_xO. lia.
+  intros [[|p|p] r s] ; try easy.
+  intros _.
+  destruct p as [p|p|] ; simpl ; lia.
 Qed.
 
 Lemma le_shr_le :
   forall mrs e n,
   (0 <= shr_m mrs)%Z -> (0 <= n)%Z ->
-  (0 <= 2 ^ n * shr_m (fst (shr mrs e n)) <= shr_m mrs)%Z /\
-  (shr_m mrs < 2 ^ n * (shr_m (fst (shr mrs e n)) + 1))%Z.
+  (0 <= shr_m (fst (shr mrs e n)))%Z /\
+  (2 ^ n * shr_m (fst (shr mrs e n)) <= shr_m mrs < 2 ^ n * (shr_m (fst (shr mrs e n)) + 1))%Z.
 Proof.
-  intros mrs e n Hmrs.
-  destruct n as [| n | n ];
-    [intros _; simpl; now destruct (shr_m mrs); simpl; lia | intro Hn | lia].
-  unfold shr.
-  rewrite iter_pos_nat. rewrite <-!(positive_nat_Z n). simpl fst.
-  induction (nat_of_P n) as [| n' IHn']; [simpl; destruct (shr_m mrs); simpl; lia |].
-  rewrite !Nat2Z.inj_succ. rewrite Z.pow_succ_r; [| apply Zle_0_nat].
-
-  rewrite iter_nat_S. rewrite (Z.mul_comm 2%Z _), <-Z.mul_assoc.
-  destruct IHn' as [[IHn'1 IHn'2] IHn'3]. apply Z.mul_nonneg_cancel_l in IHn'1; [| lia].
-  repeat split;
-    [| transitivity (2 ^ Z.of_nat n' * shr_m (iter_nat shr_1 n' mrs))%Z; [| auto] |].
-  - apply Z.mul_nonneg_nonneg; [lia |]. now apply le_shr1_le.
-  - apply Z.mul_le_mono_nonneg_l; [lia |]. now apply le_shr1_le.
-  - apply Z.lt_le_trans with
-      (2 ^ Z.of_nat n' * (shr_m (iter_nat shr_1 n' mrs) + 1))%Z; [assumption |].
-    rewrite <-Z.mul_assoc. apply Z.mul_le_mono_nonneg_l; [lia |].
-    apply Ztac.Zlt_le_add_1. now apply le_shr1_le.
+  intros mrs e n Hmrs Hn.
+  rewrite shr_nat by easy.
+  simpl.
+  rewrite <- (Z2Nat.id n) at 2 4 by easy.
+  induction (Z.to_nat n) as [|n' IHn].
+  { simpl Z.pow. rewrite 2!Zmult_1_l.
+    simpl. lia. }
+  clear n Hn.
+  rewrite Nat2Z.inj_succ, Z.pow_succ_r by apply Zle_0_nat.
+  rewrite iter_nat_S.
+  revert IHn.
+  set (mrs' := iter_nat _ _ _).
+  intros [H [IH1 IH2]].
+  destruct (le_shr1_le _ H) as [H' [K1 K2]].
+  apply (conj H').
+  rewrite (Zmult_comm 2), <- 2!Zmult_assoc.
+  split.
+  - apply Z.le_trans with (2 := IH1).
+    apply Zmult_le_compat_l with (1 := K1).
+    apply (Zpower_ge_0 radix2).
+  - apply Z.lt_le_trans with (1 := IH2).
+    apply Zmult_le_compat_l.
+    lia.
+    apply (Zpower_ge_0 radix2).
 Qed.
 
 Lemma shr_limit :
@@ -1017,12 +1032,12 @@ Proof.
       destruct mrs as [m r s]. simpl in Hmrs00, Hmrs01, Hmrs1. rewrite Hmrs00.
       simpl. now rewrite Hmrs01.
     + intros mrs Hmrs0 Hmrs1. simpl iter_nat.
-      destruct (le_shr1_le mrs) as [[Hmrs'0 Hmrs'1] Hmrs'2]; [destruct Hmrs0; lia |].
+      destruct (le_shr1_le mrs) as [Hmrs'0 [Hmrs'1 Hmrs'2]]; [destruct Hmrs0; lia |].
       set (mrs' := shr_1 mrs). apply IHn''.
       * case (0 <? shr_m (shr_1 mrs))%Z eqn:Hmrs'3;
          [apply Zlt_is_lt_bool in Hmrs'3; now left |].
         fold mrs' in Hmrs'0, Hmrs'1, Hmrs'2, Hmrs'3.
-        apply Z.ltb_ge in Hmrs'3. apply Z.mul_nonneg_cancel_l in Hmrs'0; [| easy].
+        apply Z.ltb_ge in Hmrs'3.
         apply (Z.le_antisymm _ _ Hmrs'3) in Hmrs'0. right. split; [assumption |].
         destruct Hmrs0 as [Hmrs0 | [Hmrs00 Hmrs01]].
         -- rewrite Hmrs'0 in Hmrs'2. simpl in Hmrs'2.
@@ -2563,10 +2578,6 @@ Proof.
   (* N.B.: The hypothesis (ex < 0)%Z is only here to make the proof simpler. *)
   { intros Hex.
     rewrite mrs'_simpl.
-    apply (Z.mul_le_mono_pos_l _ _ (2 ^ (- ex))).
-    apply (Zpower_gt_0 radix2).
-    lia.
-    rewrite Z.mul_0_r.
     apply le_shr_le.
     easy.
     lia. }
@@ -2580,7 +2591,6 @@ Proof.
     unfold bounded, canonical_mantissa.
     assert (A : (fexp (Z.pos (digits2_pos p) + 0) <= 0)%Z).
     { rewrite Z.add_0_r in *. rewrite Zpos_digits2_pos in *.
-      destruct (le_shr_le mrs' ex (- ex)) as [H2 H3]; [now apply mrs'_ge_0 | lia |].
       destruct (le_choice_mode_le md sx (shr_m mrs') (loc_of_shr_record mrs')) as [H4 H5].
       rewrite H0 in H4, H5.
       transitivity (fexp (Zdigits radix2 (shr_m mrs' + 1)));
@@ -2726,13 +2736,11 @@ Proof.
       destruct (le_choice_mode_le mode_ZR sx (shr_m mrs') (loc_of_shr_record mrs')) as [H3 _].
       rewrite H2 in H3. unfold mrs' in H3. case (ex <? - prec)%Z in H3.
       * simpl in H3. lia.
-      * destruct (le_shr_le ({| shr_m := Z.pos mx; shr_r := false; shr_s := false |})
-          ex (- ex)) as [[H4 _] _]; [simpl; lia | lia |].
-        elim (Zle_not_lt 0 (Z.neg p)). 2: easy.
+      * elim (Zle_not_lt 0 (Z.neg p)). 2: easy.
         apply Z.le_trans with (2 := H3).
-        apply Zmult_le_0_reg_r with (2 ^ (- ex))%Z.
-        apply Z.lt_gt, (Zpower_gt_0 radix2). lia.
-        now rewrite Zmult_comm.
+        apply le_shr_le.
+        easy.
+        lia.
 Qed.
 
 (** A few values *)
