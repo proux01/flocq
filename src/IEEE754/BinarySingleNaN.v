@@ -935,41 +935,6 @@ now rewrite iter_pos_nat.
 easy.
 Qed.
 
-Theorem inbetween_shr :
-  forall x m e l n,
-  (0 <= m)%Z ->
-  inbetween_float radix2 m e x l ->
-  let '(mrs, e') := shr (shr_record_of_loc m l) e n in
-  inbetween_float radix2 (shr_m mrs) e' x (loc_of_shr_record mrs).
-Proof.
-intros x m e l n Hm Hl.
-destruct n as [|n|n].
-now destruct l as [|[| |]].
-2: now destruct l as [|[| |]].
-unfold shr.
-rewrite iter_pos_nat.
-rewrite Zpos_eq_Z_of_nat_o_nat_of_P.
-induction (nat_of_P n).
-simpl.
-rewrite Zplus_0_r.
-now destruct l as [|[| |]].
-rewrite iter_nat_S.
-rewrite inj_S.
-unfold Z.succ.
-rewrite Zplus_assoc.
-revert IHn0.
-apply inbetween_shr_1.
-clear -Hm.
-induction n0.
-now destruct l as [|[| |]].
-rewrite iter_nat_S.
-revert IHn0.
-generalize (iter_nat shr_1 n0 (shr_record_of_loc m l)).
-clear.
-intros (m, r, s) Hm.
-now destruct m as [|[m|m|]|m] ; try (now elim Hm) ; destruct r as [|] ; destruct s as [|].
-Qed.
-
 Lemma le_shr1_le :
   forall mrs, (0 <= shr_m mrs)%Z ->
   (0 <= shr_m (shr_1 mrs))%Z /\
@@ -978,6 +943,39 @@ Proof.
   intros [[|p|p] r s] ; try easy.
   intros _.
   destruct p as [p|p|] ; simpl ; lia.
+Qed.
+
+Theorem inbetween_shr :
+  forall x m e l n,
+  (0 <= m)%Z ->
+  inbetween_float radix2 m e x l ->
+  let '(mrs, e') := shr (shr_record_of_loc m l) e n in
+  inbetween_float radix2 (shr_m mrs) e' x (loc_of_shr_record mrs).
+Proof.
+  intros x m e l n Hm Hl.
+  destruct (Zle_or_lt 0 n).
+  2: {
+    destruct n as [|n|n] ; try easy.
+    simpl.
+    now rewrite shr_m_shr_record_of_loc, loc_of_shr_record_of_loc. }
+  rewrite shr_nat by easy.
+  rewrite <- (Z2Nat.id n) at 2 by easy.
+  clear H.
+  induction (Z.to_nat n) as [|n' IHn].
+  { rewrite Zplus_0_r.
+    simpl.
+    now rewrite shr_m_shr_record_of_loc, loc_of_shr_record_of_loc. }
+  rewrite iter_nat_S, inj_S.
+  unfold Z.succ.
+  rewrite Zplus_assoc.
+  revert IHn.
+  apply inbetween_shr_1.
+  clear -Hm.
+  induction n'.
+  simpl.
+  now rewrite shr_m_shr_record_of_loc.
+  rewrite iter_nat_S.
+  now apply le_shr1_le.
 Qed.
 
 Lemma le_shr_le :
@@ -997,8 +995,8 @@ Proof.
   rewrite Nat2Z.inj_succ, Z.pow_succ_r by apply Zle_0_nat.
   rewrite iter_nat_S.
   revert IHn.
-  set (mrs' := iter_nat _ _ _).
-  intros [H [IH1 IH2]].
+  generalize (iter_nat shr_1 n' mrs).
+  intros mrs' [H [IH1 IH2]].
   destruct (le_shr1_le _ H) as [H' [K1 K2]].
   apply (conj H').
   rewrite (Zmult_comm 2), <- 2!Zmult_assoc.
